@@ -13,7 +13,7 @@ Open Source: MIT-licensed, open for contributions.
 
 #### Validation Chart
 | Validation               | String | Number | Email | PhoneNumber | Password | ConfirmPassword | Image | Images
-|--------------------------|--------|--------|-------|-------------|----------|----------------|
+|--------------------------|--------|--------|-------|-------------|----------|----------------|✓  ✓  
 | Nullability             | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
 | HTML                    | ✓      |        | ✓     |             |          |                |
 | min - max Length        | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
@@ -26,7 +26,7 @@ Open Source: MIT-licensed, open for contributions.
 | Count '.'               |        |        | ✓     |             |          |                |
 | validatePhonePattern    |        |        |       | ✓           |          |                |
 | contains upper case     |        |        |       |             | ✓        | ✓              |
-| contains lower case     |        |        |       |             | ✓        | ✓              |
+| contains lower case     |        |        |       |             | ✓        | ✓              |✓  
 | contains one number     |        |        |       |             | ✓        | ✓              |
 | contains special char   |        |        |       |             | ✓        | ✓              |
 | no spaces               |        |        |       |             | ✓        | ✓              |
