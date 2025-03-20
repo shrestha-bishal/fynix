@@ -10,3 +10,25 @@ Extensible: Add custom validation rules or extend the library for more specializ
 Easy to Use: Simple library for quick integration into any PHP project.
 Lightweight and Fast: Optimized for performance without unnecessary overhead.
 Open Source: MIT-licensed, open for contributions.
+
+#### Validation Chart
+| Validation               | String | Number | Email | PhoneNumber | Password | ConfirmPassword | Image | Images
+|--------------------------|--------|--------|-------|-------------|----------|----------------|
+| Nullability             | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
+| HTML                    | ✓      |        | ✓     |             |          |                |
+| min - max Length        | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
+| isString                | ✓      |        |       |             |          |                |
+| isNumeric               |        | ✓      |       | ✓           |          |                |
+| min - max number        |        | ✓      |       |             |          |                |
+| isEmail                 |        |        | ✓     |             |          |                |
+| DNS                     |        |        | ✓     |             |          |                |
+| Count '@'               |        |        | ✓     |             |          |                |
+| Count '.'               |        |        | ✓     |             |          |                |
+| validatePhonePattern    |        |        |       | ✓           |          |                |
+| contains upper case     |        |        |       |             | ✓        | ✓              |
+| contains lower case     |        |        |       |             | ✓        | ✓              |
+| contains one number     |        |        |       |             | ✓        | ✓              |
+| contains special char   |        |        |       |             | ✓        | ✓              |
+| no spaces               |        |        |       |             | ✓        | ✓              |
+| !=                      |        |        |       |             | ✓        | ✓              |
+| validate with existing  |        |        | ✓     |             |          |                |
