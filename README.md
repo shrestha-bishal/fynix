@@ -14,7 +14,7 @@ Open Source: MIT-licensed, open for contributions.
 #### Validation Chart
 | Validation               | String | Number | Email | PhoneNumber | Password | ConfirmPassword | Image | Images
 |--------------------------|--------|--------|-------|-------------|----------|----------------|✓  ✓  
-| Nullability             | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
+| Nullability             | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |✓ 
 | HTML                    | ✓      |        | ✓     |             |          |                |
 | min - max Length        | ✓      | ✓      | ✓     | ✓           | ✓        | ✓              |
 | isString                | ✓      |        |       |             |          |                |
