@@ -4,7 +4,7 @@ namespace ValidatePHPCore\Validators;
 use ValidatePhpCore\ValidationError;
 use ValidatePHPCore\ValidatorBase;
 
-class ImageValidation extends ValidatorBase 
+class ImageValidator extends ValidatorBase 
 {
     private int $_maxFileSizeMB = 5; // - 5MB
 
