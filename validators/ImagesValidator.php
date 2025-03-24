@@ -58,7 +58,7 @@ class ImagesValidator extends ValidatorBase {
                 'size' => $fieldValue['size'][$key]
             ];
 
-            $imageValidation = new ImageValidation($name, $name);
+            $imageValidation = new ImageValidator($name, $name);
             $error = $imageValidation->validate($fieldValueByIndex);
             
             if($error != null) 
