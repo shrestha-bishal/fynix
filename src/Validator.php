@@ -8,8 +8,9 @@ namespace ValidatePHPCore;
  * @package ValidatePHPCore
  * @category Validation
  * @version 1.0.0
- * @author Bishal Shrestha
+ * @author Bishal Shrestha <bishal.shrestha@outlook.com.au>
  * @license MIT License
+ * @copyright Copyright (c) 2025, Bishal Shrestha. All rights reserved.
  * @see packagist link
  * @link https://github.com/shrestha-bishal
  */
