@@ -6,7 +6,7 @@ use ValidatePHPCore\ValidatorBase;
 
 class ImagesValidator extends ValidatorBase {
     /**
-     * Constructor for the StringValidation class.
+     * Constructor for the ImagesValidator class.
      *
      * @param string  $name       The name of the validation.
      * @param string  $fieldName  The name of the field to be validated.
