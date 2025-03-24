@@ -10,13 +10,14 @@ namespace ValidatePHPCore;
  * @version 1.0.0
  * @author Bishal Shrestha
  * @license MIT License
+ * @see packagist link
  * @link https://github.com/shrestha-bishal
  */
 
-class Validator 
+class Validator
 {
     /**
-     * get the validation base errors
+     * get the validation errors
      */
     public static function getValidationErrors($rules, $data) {
       $errors = [];
