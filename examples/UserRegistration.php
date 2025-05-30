@@ -1,10 +1,10 @@
 <?php
 use ValidatePhpCore\ValidationError;
-use ValidatePHPCore\Validator;
-use ValidatePHPCore\Validators\EmailValidator;
-use ValidatePHPCore\Validators\PasswordValidator;
-use ValidatePHPCore\Validators\PhoneNumberValidator;
-use ValidatePHPCore\Validators\StringValidator;
+use ValidatePhpCore\Validator;
+use ValidatePhpCore\Validators\EmailValidator;
+use ValidatePhpCore\Validators\PasswordValidator;
+use ValidatePhpCore\Validators\PhoneNumberValidator;
+use ValidatePhpCore\Validators\StringValidator;
 
 class UserRegistration 
 {

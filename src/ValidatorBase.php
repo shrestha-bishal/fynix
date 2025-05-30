@@ -1,5 +1,5 @@
 <?php
-namespace ValidatePHPCore;
+namespace ValidatePhpCore;
 
 abstract class ValidatorBase 
 {

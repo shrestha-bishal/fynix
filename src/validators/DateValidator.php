@@ -1,5 +1,5 @@
 <?php 
-namespace ValidatePHPCore\Validators;
+namespace ValidatePhpCore\Validators;
 
 use ValidatePhpCore\ValidationError;
-use ValidatePHPCore\ValidatorBase;
+use ValidatePhpCore\ValidatorBase;

@@ -1,11 +1,11 @@
 <?php 
-namespace ValidatePHPCore;
+namespace ValidatePhpCore;
 
 /**
  * Class Validator
  *
  * This class serves as a core utility for validating various data types and input fields. 
- * @package ValidatePHPCore
+ * @package ValidatePhpCore
  * @category Validation
  * @version 1.0.0
  * @author Bishal Shrestha <bishal.shrestha@outlook.com.au>
