@@ -1,4 +1,6 @@
 <?php
+namespace ValidatePhpCore\Examples;
+
 use ValidatePhpCore\ValidationError;
 use ValidatePhpCore\Validator;
 use ValidatePhpCore\Validators\EmailValidator;

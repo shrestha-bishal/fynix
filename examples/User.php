@@ -1,4 +1,5 @@
 <?php
+namespace ValidatePhpCore\Examples;
 
 use ValidatePhpCore\Validator;
 use ValidatePhpCore\Validators\EmailValidator;
