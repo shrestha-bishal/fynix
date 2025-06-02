@@ -1,6 +1,6 @@
 <?php
 use ValidatePhpCore\Examples\Staff;
 use ValidatePhpCore\Examples\ValidationRules;
-use ValidatePhpCore\ValidationHandler;
+use ValidatePhpCore\ValidationRegistry;
 
-ValidationHandler::register(Staff::class, [ValidationRules::class, 'validateStaff']);
+ValidationRegistry::register(Staff::class, [ValidationRules::class, 'validateStaff']);
