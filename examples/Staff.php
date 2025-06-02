@@ -1,5 +1,5 @@
 <?php 
-namespace ValidatePhpCore\Examples;
+namespace PhpValidationCore\Examples;
 
 class Staff
 {
