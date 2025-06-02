@@ -47,7 +47,7 @@ class User {
             new StringValidator('Country Code', 'countryCode', 5, 0, false),
         ];
         
-        $validationErrors = Validator::getValidationErrors($rules, $this);
+        $validationErrors = Validator::getValidationErrors($rules, $this, false);
         
         return $validationErrors;
     }

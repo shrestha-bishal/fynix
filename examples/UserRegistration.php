@@ -51,7 +51,7 @@ class UserRegistration
             $rules[] = $lastNameValidation;
         }
         
-        $validationErrors = Validator::getValidationErrors($rules, $this);
+        $validationErrors = Validator::getValidationErrors($rules, $this, false);
         
         if($this->password !== $this->confirmPassword) 
             $validationErrors['confirmPassword'] = new ValidationError($confirmPasswordValidation, "Passwords do not match.");
