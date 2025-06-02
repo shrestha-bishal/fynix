@@ -1,5 +1,5 @@
 <?php
-namespace ValidatePhpCore\Examples;
+namespace PhpValidationCore\Examples;
 
 use ValidatePhpCore\Validators\StringValidator;
 
