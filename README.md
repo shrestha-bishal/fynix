@@ -1,4 +1,4 @@
-### Validate PHP Core
+### PHP Validation Core
 
 `validatephp-core` is a lightweight, robust PHP validation library that provides essential validation functionality for common data types such as strings, emails, numbers, phone numbers, image or images, passwords and more with the flexibility to validate optional fields as well. Designed to be simple, extensible, and highly efficient, this package helps ensure data integrity and security in your PHP applications.
 
