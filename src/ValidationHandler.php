@@ -1,5 +1,5 @@
 <?php
-namespace ValidatePhpCore;
+namespace PhpValidationCore;
 /**
  * Class ValidationHandler
  *
