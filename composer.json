@@ -1,6 +1,6 @@
 {
-    "name": "bishal-shrestha/validatephp-core",
-    "description": "validatephp-core is a lightweight and extensible PHP validation library that provides common data validation methods for strings, numbers, emails, phone numbers, images, and more. Simple to integrate and optimized for performance, it's perfect for ensuring data integrity in PHP applications.",
+    "name": "bishal-shrestha/php-validation-core",
+    "description": "php-validation-core is a lightweight and extensible PHP validation library that provides common data validation methods for strings, numbers, emails, phone numbers, images, and more. Simple to integrate and optimized for performance, it's perfect for ensuring data integrity in PHP applications.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -18,7 +18,7 @@
     },
     "autoload": {
         "psr-4": {
-            "ValidatePhpCore\\": "src/"
+            "PhpValidationCore\\": "src/"
         }
     },
     "minimum-stability": "dev",
