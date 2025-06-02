@@ -1,8 +1,6 @@
 <?php
 namespace PhpValidationCore;
 
-use ValidatePhpCore\ValidatorBase;
-
 class ValidationError {
     public ValidatorBase $rule;
     public string $message;
