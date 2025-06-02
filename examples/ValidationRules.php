@@ -1,20 +1,16 @@
 <?php
-namespace ValidatePhpCore;
+namespace ValidatePhpCore\Examples;
 
-use ValidatePhpCore\Examples\User;
-use ValidatePhpCore\Examples\UserRegistration;
 use ValidatePhpCore\Validators\StringValidator;
 
-class ValidationRules {
-    public static function validateUser(User $user) {
+class ValidationRules
+{
+    public static function validateStaff(Staff $staff): array
+    {
         return [
-            new StringValidator('First Name', $user->firstName, 20)
-        ];
-    }
-
-    public static function validateUserRegistration(UserRegistration $userRegistration) {
-        return [
-            new StringValidator('First Name', $userRegistration->firstName, 20)
+            new StringValidator('Name', $staff->name, 50),
+            new StringValidator('Email', $staff->email, 100),
+            new StringValidator('Position', $staff->position, 30),
         ];
     }
 }

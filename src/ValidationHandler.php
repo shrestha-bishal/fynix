@@ -14,30 +14,25 @@ use ReflectionNamedType;
  */
 
 class ValidationHandler {
-    protected static ?array $methodMappings = null;
+    /** @var array<class-string, callable> */
+    protected static array $registry = [];
 
-    protected static function buildMethodMappings(): void {
-        self:: $methodMappings = [];
-
-        $reflection = new ReflectionClass(ValidationRules::class);
-        foreach($reflection->getMethods(ReflectionMethod::IS_PUBLIC | ReflectionMethod::IS_STATIC) as $method) {
-            if(!str_starts_with($method->name, 'validate'))
-                continue;
-
-            $params = $method->getParameters();
-            if(count($params) !== 1)
-                continue;
-            
-            $param = $params[0];
-            $type = $param->getType();
-
-            if($type instanceof ReflectionNamedType && !$type->isBuiltin()) {
-                $className = $type->getName();
-                self::$methodMappings[$className] = $method->name;
-            }
-        }
+    /**
+     * Register validation rules for a specific class.
+     *
+     * @param class-string $className
+     * @param callable(object): array $resolver
+     */
+    public static function register(string $className, callable $resolver) : void {
+        self::$registry[$className] = $resolver;
     }
- 
+    
+    /**
+     * Validate an instance and return errors.
+     *
+     * @param object $instance
+     * @return array
+     */
     public static function validate(object $instance) : array {
         $class = get_class($instance);
 
@@ -45,34 +40,17 @@ class ValidationHandler {
         $reflection = new ReflectionClass($instance);
         $attributes = $reflection->getAttributes(ValidateWith::class);
 
-        if(!empty($attributes)) {
-            /** @var ValidateWith $attr */
-            $attr = $attributes[0]->newInstance();
-            $method = $attr->methodName;
-
-            if(!method_exists(ValidationRules::class, $method)) {
-                throw new InvalidArgumentException("Validation rule '$method' not found in ValidationRules.");
-            }
-         
-            return ValidationRules::$method($instance);
+        if(!isset(self::$registry[$class])) {
+            throw new InvalidArgumentException("No validation rule registered for class $class.");
         }
 
-        // build method on demand
-        if(self::$methodMappings === null) {
-            self::buildMethodMappings();
-        }
-
-        // Checking if there is a mapped validation rule method for the class
-        if(!isset(self::$methodMappings[$class])) {
-            throw new InvalidArgumentException("No validation rule found for class $class.");
-        }
-
-        $method = self::$methodMappings[$class];
-        $rules =  ValidationRules::$method($instance);
+        $resolver = self::$registry[$class];
+        $rules = $resolver($instance);
+        
         return Validator::getValidationErrors($rules, $instance);
     }
 
     public static function clearCache() : void {
-        self::$methodMappings = null;
+        self::$registry = [];
     }
 }
