@@ -1,7 +1,7 @@
 <?php
 namespace PhpValidationCore\Examples;
 
-use ValidatePhpCore\Validators\StringValidator;
+use PhpValidationCore\Validators\StringValidator;
 
 class ValidationRules
 {
