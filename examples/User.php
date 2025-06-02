@@ -1,10 +1,9 @@
 <?php
-
-use ValidatePhpCore\Validator;
-use ValidatePhpCore\Validators\EmailValidator;
-use ValidatePhpCore\Validators\ImagesValidator;
-use ValidatePhpCore\Validators\PhoneNumberValidator;
-use ValidatePhpCore\Validators\StringValidator;
+use PhpValidationCore\Validator;
+use PhpValidationCore\Validators\EmailValidator;
+use PhpValidationCore\Validators\ImagesValidator;
+use PhpValidationCore\Validators\PhoneNumberValidator;
+use PhpValidationCore\Validators\StringValidator;
 
 class User {
     public ?string $firstName = null;

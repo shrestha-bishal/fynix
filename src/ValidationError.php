@@ -1,7 +1,7 @@
 <?php
-namespace ValidatePhpCore;
+namespace PhpValidationCore;
 
-use ValidatePhpCore\ValidatorBase;
+use PhpValidationCore\ValidatorBase;
 
 class ValidationError {
     public ValidatorBase $rule;
