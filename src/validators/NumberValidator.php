@@ -55,4 +55,3 @@ class NumberValidator extends ValidatorBase {
         return $error;
     }
 }
-
