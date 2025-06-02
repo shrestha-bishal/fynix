@@ -14,12 +14,12 @@ class ValidationHandler {
      * @param object $instance
      * @return array
      */
-    public static function validate(object $instance) : array {
+    public static function validate(object $instance, $flattenErrorToString = true) : array {
         $class = get_class($instance);
 
         $resolver = ValidationRegistry::getResolver($class);
         $rules = $resolver($instance);
         
-        return Validator::getValidationErrors($rules, $instance);
+        return Validator::getValidationErrors($rules, $instance, $flattenErrorToString);
     }
 }

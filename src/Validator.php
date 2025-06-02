@@ -18,9 +18,15 @@ namespace PhpValidationCore;
 class Validator
 {
     /**
-     * get the validation errors
+     * Retrieve validation errors for the given data object and rules.
+     *
+     * @param array  $rules             An array of validation rule instances.
+     * @param object $data              The data object to validate.
+     * @param bool   $flattenToString  If true, returns error messages as strings; otherwise, returns ValidationError objects.
+     *
+     * @return array<string, string[]|ValidationError[]> An associative array of validation errors keyed by property name.
      */
-    public static function getValidationErrors($rules, $data) {
+    public static function getValidationErrors(array $rules, object $data, bool $flattenToString = true) : array {
       $errors = [];
 
       foreach($rules as $rule) 
@@ -29,7 +35,7 @@ class Validator
         $validation = $rule->validateField($fieldValue);
       
         if($validation != null) {
-          $errors[$rule->fieldName] = $validation;
+          $errors[$rule->fieldName] = $flattenToString ? $validation->message : $validation;
         }
       }
 
