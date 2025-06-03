@@ -29,8 +29,8 @@ class NumberValidator extends ValidatorBase {
         $options ??= new NumberValidationOptions();
 
         if($options->number != null) {
-            $this->_minNumber = $options->number['min'] ?? null;
-            $this->_maxNumber = $options->number['max'] ?? null;
+            $this->_minNumber = $options->number['min'] ?? $options->number[0] ?? null;
+            $this->_maxNumber = $options->number['max'] ?? $options->number[1] ?? null;
         }
 
         parent::__construct($name, $propertyName, $options);
