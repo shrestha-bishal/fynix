@@ -35,8 +35,8 @@ abstract class ValidatorBase
         $this->includeGenericValidation = $options->includeGenericValidation;
         $this->fieldType = $options->fieldType;
         $this->isRequired = $options->isRequired;
-        $this->minLength = $options->length['min'] ?? null;
-        $this->maxLength = $options->length['max'] ?? null;
+        $this->minLength = $options->length['min'] ?? $options->length[0] ?? null;
+        $this->maxLength = $options->length['max'] ?? $options->length[1] ?? null;
     }
 
     public function validateField($fieldValue) : ?ValidationError
