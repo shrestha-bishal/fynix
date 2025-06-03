@@ -4,7 +4,7 @@ namespace PhpValidationCore;
 abstract class ValidatorBase 
 {
     public string $name;
-    public string $fieldName;
+    public string $propertyName;
     public $minLength;
     public $maxLength;
     public $isRequired;
@@ -24,7 +24,7 @@ abstract class ValidatorBase
      */
     function __construct(
         string $name, 
-        string $fieldName, 
+        string $propertyName, 
         int $minLength = 4, 
         int $maxLength, 
         string $fieldType, 
@@ -34,7 +34,7 @@ abstract class ValidatorBase
     {
         $this->name = ucfirst($name);
         $this->fieldType = $fieldType;
-        $this->fieldName = $fieldName;
+        $this->propertyName = $propertyName;
         $this->minLength = $minLength;
         $this->maxLength = $maxLength;
         $this->isRequired = $isRequired;

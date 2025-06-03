@@ -10,6 +10,6 @@ class ValidationError {
     {
         $this->rule = $rule;
         $this->message = $message;
-        $this->field_name = $rule->fieldName;
+        $this->field_name = $rule->propertyName;
     }
 }
