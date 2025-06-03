@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\ImageValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class ImageValidator extends ValidatorBase 
@@ -11,23 +12,16 @@ class ImageValidator extends ValidatorBase
     public function __construct(
         string $name, 
         string $propertyName, 
-        bool $isRequired = true,
-        ?int $maxFileSizeMB = null) 
+        ?ImageValidationOptions $options = null) 
     {
-        parent::__construct(
-            $name,
-            $propertyName,
-            $numMinImages = 1,
-            $numMaxImages = 1,
-            "image",
-            $isRequired,
-            $includeGenericValidation = false
-        );
+        $options ??= new ImageValidationOptions();
 
-        if($maxFileSizeMB != null) 
+        if($options->maxFileSizeMB != null) 
         {
-            $this->_maxFileSizeMB = $maxFileSizeMB;
+            $this->_maxFileSizeMB = $options->maxFileSizeMB;
         }
+
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError 

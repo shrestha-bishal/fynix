@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\StringValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class StringValidator extends ValidatorBase {
@@ -17,19 +18,11 @@ class StringValidator extends ValidatorBase {
     
     public function __construct(
         string $name,
-        string $propertyName, 
-        int $maxLength, 
-        int $minLength = 2, 
-        bool $isRequired = true)
-    {
-        parent::__construct(
-            $name,
-            $propertyName,
-            $minLength, 
-            $maxLength,
-            "string",
-            $isRequired
-        );
+        string $propertyName,
+        ?StringValidationOptions $options = null)
+    { 
+        $options ??= new StringValidationOptions();
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError

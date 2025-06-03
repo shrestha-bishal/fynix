@@ -1,12 +1,14 @@
 <?php
 namespace PhpValidationCore;
 
+use PhpValidationCore\ValidationOptions\ValidationOptions;
+
 abstract class ValidatorBase 
 {
     public string $name;
     public string $propertyName;
-    public $minLength;
-    public $maxLength;
+    public ?int $minLength;
+    public ?int $maxLength;
     public $isRequired;
     public $fieldType;
     public $includeGenericValidation = true;
@@ -25,20 +27,16 @@ abstract class ValidatorBase
     function __construct(
         string $name, 
         string $propertyName, 
-        int $minLength = 4, 
-        int $maxLength, 
-        string $fieldType, 
-        bool $isRequired = true, 
-        bool $includeGenericValidation = true
+        ValidationOptions $options,
         ) 
     {
         $this->name = ucfirst($name);
-        $this->fieldType = $fieldType;
         $this->propertyName = $propertyName;
-        $this->minLength = $minLength;
-        $this->maxLength = $maxLength;
-        $this->isRequired = $isRequired;
-        $this->includeGenericValidation = $includeGenericValidation;
+        $this->includeGenericValidation = $options->includeGenericValidation;
+        $this->fieldType = $options->fieldType;
+        $this->isRequired = $options->isRequired;
+        $this->minLength = $options->length['min'] ?? null;
+        $this->maxLength = $options->length['max'] ?? null;
     }
 
     public function validateField($fieldValue) : ?ValidationError
@@ -98,6 +96,9 @@ abstract class ValidatorBase
      */
     private function validateLength($fieldValue) : ?ValidationError
     {
+        if($this->minLength == null || $this->maxLength == null)
+            return null;
+    
         $stringLength = strlen($fieldValue);
 
         if($stringLength < $this->minLength) 
