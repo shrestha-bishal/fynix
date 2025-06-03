@@ -31,11 +31,11 @@ class Validator
 
       foreach($rules as $rule) 
       {
-        $fieldValue = isset($data->{$rule->fieldName}) ? $data->{$rule->fieldName} : null;
+        $fieldValue = isset($data->{$rule->propertyName}) ? $data->{$rule->propertyName} : null;
         $validation = $rule->validateField($fieldValue);
       
         if($validation != null) {
-          $errors[$rule->fieldName] = $flattenToString ? $validation->message : $validation;
+          $errors[$rule->propertyName] = $flattenToString ? $validation->message : $validation;
         }
       }
 

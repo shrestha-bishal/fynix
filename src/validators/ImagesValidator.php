@@ -9,7 +9,7 @@ class ImagesValidator extends ValidatorBase {
      * Constructor for the ImagesValidator class.
      *
      * @param string  $name       The name of the validation.
-     * @param string  $fieldName  The name of the field to be validated.
+     * @param string  $propertyName  The name of the field to be validated.
      * @param int     $minLength  The minimum allowed length for the string.
      * @param int     $maxLength  The maximum allowed length for the string.
      * @param bool    $isRequired Whether the field is required. Defaults to true.
@@ -17,7 +17,7 @@ class ImagesValidator extends ValidatorBase {
 
     public function __construct(
         string $name, 
-        string $fieldName, 
+        string $propertyName, 
         int $numMaxImages, 
         int $numMinImages = 1,
         bool $isRequired = true,
@@ -25,7 +25,7 @@ class ImagesValidator extends ValidatorBase {
     {
         parent::__construct(
             $name,
-            $fieldName,
+            $propertyName,
             $numMinImages,
             $numMaxImages,
             "image",
