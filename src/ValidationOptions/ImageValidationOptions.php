@@ -2,12 +2,15 @@
 namespace PhpValidationCore\ValidationOptions;
 
 class ImageValidationOptions extends ValidationOptions {
-    public bool $includeGenericValidation = false;
-    public string $fieldType = 'image';
-    public bool $isRequired = true; 
-    /**
-     * @var num images
-     */
-    public array $length = ['min' => 1, 'max' => 1]; 
-    public int $maxFileSizeMB = 5;
+    public function __construct(
+        array $numImage = ['min' => 1, 'max' => 1],
+        bool $isRequired = true,
+        bool $includeGenericValidation = false,
+        public int $maxFileSizeMB = 5)
+    {
+        $this->fieldType = 'image';
+        $this->length = $numImage;
+        $this->includeGenericValidation = $includeGenericValidation;
+        $this->isRequired = $isRequired;
+    }
 }
