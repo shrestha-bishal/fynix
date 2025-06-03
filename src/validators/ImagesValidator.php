@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\ImageValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class ImagesValidator extends ValidatorBase {
@@ -15,23 +16,16 @@ class ImagesValidator extends ValidatorBase {
      * @param bool    $isRequired Whether the field is required. Defaults to true.
      */
 
+    public ImageValidationOptions $options;
+
     public function __construct(
         string $name, 
         string $propertyName, 
-        int $numMaxImages, 
-        int $numMinImages = 1,
-        bool $isRequired = true,
-        ?int $maxFileSizeMB = null) 
+        ?ImageValidationOptions $options = null) 
     {
-        parent::__construct(
-            $name,
-            $propertyName,
-            $numMinImages,
-            $numMaxImages,
-            "image",
-            $isRequired,
-            $includeGenericValidation = false
-        );
+        $options ??= new ImageValidationOptions();
+        $this->options = $options;
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError 
@@ -58,7 +52,7 @@ class ImagesValidator extends ValidatorBase {
                 'size' => $fieldValue['size'][$key]
             ];
 
-            $imageValidation = new ImageValidator($name, $name);
+            $imageValidation = new ImageValidator($name, $name, $this->options);
             $error = $imageValidation->validate($fieldValueByIndex);
             
             if($error != null) 

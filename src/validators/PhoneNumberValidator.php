@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\PhoneNumberValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class PhoneNumberValidator extends ValidatorBase 
@@ -18,18 +19,10 @@ class PhoneNumberValidator extends ValidatorBase
     public function __construct(
         string $name,
         string $propertyName, 
-        int $maxLength = 12, 
-        int $minLength = 10,
-        bool $isRequired = true)
+        ?PhoneNumberValidationOptions $options = null)
     {
-        parent::__construct(
-            $name, 
-            $propertyName, 
-            $minLength,
-            $maxLength,
-            "phone",
-            $isRequired
-        );
+        $options ??= new PhoneNumberValidationOptions();
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError
