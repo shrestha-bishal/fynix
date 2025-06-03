@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\PasswordValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class PasswordValidator extends ValidatorBase 
@@ -18,18 +19,10 @@ class PasswordValidator extends ValidatorBase
     public function __construct(
         string $name, 
         string $propertyName, 
-        int $maxLength = 30,
-        int $minLength = 8,
-        bool $isRequired = true)
+        ?PasswordValidationOptions $options = null)
     {
-        parent::__construct(
-            $name, 
-            $propertyName, 
-            $minLength,
-            $maxLength,
-            "password",
-            $isRequired
-        );
+        $options ??= new PasswordValidationOptions();
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError

@@ -2,6 +2,7 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\EmailValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class EmailValidator extends ValidatorBase 
@@ -20,20 +21,11 @@ class EmailValidator extends ValidatorBase
     public function __construct(
         string $name, 
         string $propertyName,
-        int $maxLength, 
-        int $minLength = 6, 
-        bool $isUsername = false,
-        bool $isRequired = true)
+        ?EmailValidationOptions $options = null)
     {
-        $this->_isUsername = $isUsername;
-        parent::__construct(
-            $name,
-            $propertyName,
-            $minLength,
-            $maxLength,
-            "email",
-            $isRequired
-        );
+        $options ??= new EmailValidationOptions();
+        $this->_isUsername = $options->isUsername;
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError

@@ -2,11 +2,12 @@
 namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
+use PhpValidationCore\ValidationOptions\NumberValidationOptions;
 use PhpValidationCore\ValidatorBase;
 
 class NumberValidator extends ValidatorBase {
-    private int $_minNumber;
-    private int $_maxNumber;
+    private ?int $_minNumber;
+    private ?int $_maxNumber;
 
     /**
      * Constructor for the NumberValidation class.
@@ -23,23 +24,16 @@ class NumberValidator extends ValidatorBase {
     public function __construct(
         string $name, 
         string $propertyName, 
-        int $maxLength,
-        int $minNumber, 
-        ?int $maxNumber = null, 
-        int $minLength = 1,
-        bool $isRequired = true)
-    {
-        $this->_minNumber = $minNumber;
-        $this->_maxNumber = $maxNumber;
+        ?NumberValidationOptions $options = null)
+    { 
+        $options ??= new NumberValidationOptions();
 
-        parent::__construct(
-            $name,
-            $propertyName, 
-            $minLength,
-            $maxLength,
-            "number",
-            $isRequired
-        );
+        if($options->number != null) {
+            $this->_minNumber = $options->number['min'] ?? null;
+            $this->_maxNumber = $options->number['max'] ?? null;
+        }
+
+        parent::__construct($name, $propertyName, $options);
     }
 
     public function validate($fieldValue) : ?ValidationError
@@ -48,6 +42,9 @@ class NumberValidator extends ValidatorBase {
 
         if (!is_numeric($fieldValue))
             return new ValidationError($this, "$this->name must be a number.");
+
+        if ($this->_minNumber == null || $fieldValue > $this->_maxNumber == null)
+            return null;
 
         if ($fieldValue < $this->_minNumber || $fieldValue > $this->_maxNumber)
             return new ValidationError($this, "$this->name must be between $this->_minNumber and $this->_maxNumber.");
