@@ -2,8 +2,14 @@
 namespace PhpValidationCore\ValidationOptions;
 
 class StringValidationOptions extends ValidationOptions {
-    public bool $includeGenericValidation = true;
-    public string $fieldType = 'string';
-    public bool $isRequired = true; 
-    public array $length = ['min' => 2, 'max' => 50]; 
+    public function __construct(
+        array $length = ['min' => 2, 'max' => 50],
+        bool $isRequired = true,
+        bool $includeGenericValidation = true) 
+    {
+        $this->fieldType = 'string';
+        $this->isRequired = $isRequired;   
+        $this->includeGenericValidation = $includeGenericValidation;
+        $this->length = $length;
+    } 
 }

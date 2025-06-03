@@ -2,8 +2,14 @@
 namespace PhpValidationCore\ValidationOptions;
 
 class PasswordValidationOptions extends ValidationOptions {
-    public bool $includeGenericValidation = true;
-    public string $fieldType = 'password';
-    public bool $isRequired = true; 
-    public array $length = ['min' => 8, 'max' => 30]; 
+    public function __construct(
+        array $length = ['min' => 8, 'max' => 30],
+        bool $isRequired = true,
+        bool $includeGenericValidation = true)
+    {
+        $this->fieldType = 'password';
+        $this->isRequired = $isRequired;   
+        $this->includeGenericValidation = $includeGenericValidation;
+        $this->length = $length;
+    }
 }
