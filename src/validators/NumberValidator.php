@@ -12,7 +12,7 @@ class NumberValidator extends ValidatorBase {
      * Constructor for the NumberValidation class.
      *
      * @param string $name The name of the validation.
-     * @param string $fieldName The name of the field to be validated.
+     * @param string $propertyName The name of the field to be validated.
      * @param int $maxLength The maximum length of the number.
      * @param int $minNumber The minimum value of the number.
      * @param int $maxNumber The maximum value of the number.
@@ -22,10 +22,10 @@ class NumberValidator extends ValidatorBase {
     
     public function __construct(
         string $name, 
-        string $fieldName, 
+        string $propertyName, 
         int $maxLength,
         int $minNumber, 
-        int $maxNumber, 
+        ?int $maxNumber = null, 
         int $minLength = 1,
         bool $isRequired = true)
     {
@@ -34,7 +34,7 @@ class NumberValidator extends ValidatorBase {
 
         parent::__construct(
             $name,
-            $fieldName, 
+            $propertyName, 
             $minLength,
             $maxLength,
             "number",

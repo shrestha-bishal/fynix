@@ -10,13 +10,13 @@ class ImageValidator extends ValidatorBase
 
     public function __construct(
         string $name, 
-        string $fieldName, 
+        string $propertyName, 
         bool $isRequired = true,
         ?int $maxFileSizeMB = null) 
     {
         parent::__construct(
             $name,
-            $fieldName,
+            $propertyName,
             $numMinImages = 1,
             $numMaxImages = 1,
             "image",
