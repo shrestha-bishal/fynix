@@ -1,6 +1,8 @@
 <?php 
 namespace PhpValidationCore;
 
+use PhpValidationCore\Validators\ValidatorBase;
+
 /**
  * Class Validator
  *
@@ -20,7 +22,7 @@ class Validator
     /**
      * Retrieve validation errors for the given data object and rules.
      *
-     * @param array  $rules             An array of validation rule instances.
+     * @param ValidatorBase[] $rules   An array of validation rule instances
      * @param object $data              The data object to validate.
      * @param bool   $flattenToString  If true, returns error messages as strings; otherwise, returns ValidationError objects.
      *
@@ -29,13 +31,53 @@ class Validator
     public static function getValidationErrors(array $rules, object $data, bool $flattenToString = true) : array {
       $errors = [];
 
-      foreach($rules as $rule) 
+      foreach($rules as $key => $rule) 
       {
-        $fieldValue = isset($data->{$rule->propertyName}) ? $data->{$rule->propertyName} : null;
-        $validation = $rule->validateField($fieldValue);
-      
-        if($validation != null) {
-          $errors[$rule->propertyName] = $flattenToString ? $validation->message : $validation;
+        $propertyValue = $data->{$key} ?? null;
+        
+        if(is_array($rule)) 
+        {
+          // case: array of objects
+          if (is_array($propertyValue)) 
+          {
+              foreach ($rule as $index => $nestedRules) {
+                $nestedItem = $propertyValue[$index];
+
+                if (!is_object($nestedItem)) {
+                    $errors[$key][$index] = 'Invalid item — expected object.';
+                    continue;
+                }
+
+                $nestedErrors = self::getValidationErrors($nestedRules, $nestedItem, $flattenToString);
+                if (!empty($nestedErrors)) {
+                    $errors[$key][$index] = $nestedErrors;
+                }
+              }
+          }
+          
+          // case: single nested object
+          else if (is_object($propertyValue)) 
+          {
+            $nestedErrors = self::getValidationErrors($rule, $propertyValue, $flattenToString);
+            
+            if(!empty($nestedErrors))
+              $errors[$key] = $nestedErrors;
+          }
+
+          // else: not valid structure
+          else {
+              $errors[$key] = 'Invalid value — expected object or array of objects.';
+          }
+
+          continue;
+        }
+        
+        if($rule instanceof ValidatorBase) {
+          $fieldValue = isset($data->{$rule->propertyName}) ? $data->{$rule->propertyName} : null;
+          $validation = $rule->validateField($fieldValue);
+          
+          if($validation != null)
+            $errors[$rule->propertyName] = $flattenToString ? $validation->message : $validation;
         }
       }
 
