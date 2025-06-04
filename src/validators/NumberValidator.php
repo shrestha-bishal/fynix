@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\NumberValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class NumberValidator extends ValidatorBase {
     private ?int $_minNumber;

@@ -1,7 +1,7 @@
 <?php 
 namespace PhpValidationCore\ValidationOptions;
 
-class NumberValidationOptions extends ValidationOptions {
+class NumberValidationOptions extends ValidationOptionsBase {
     public function __construct(
         array $length = ['min' => 1, 'max' => 30],
         bool $isRequired = true,

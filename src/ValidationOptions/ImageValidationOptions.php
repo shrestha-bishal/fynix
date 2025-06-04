@@ -1,7 +1,7 @@
 <?php 
 namespace PhpValidationCore\ValidationOptions;
 
-class ImageValidationOptions extends ValidationOptions {
+class ImageValidationOptions extends ValidationOptionsBase {
     public function __construct(
         array $numImage = ['min' => 1, 'max' => 1],
         bool $isRequired = true,

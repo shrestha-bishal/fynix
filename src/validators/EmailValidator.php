@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\EmailValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class EmailValidator extends ValidatorBase 
 {

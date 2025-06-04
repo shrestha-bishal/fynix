@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\PasswordValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class PasswordValidator extends ValidatorBase 
 {

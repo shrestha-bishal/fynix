@@ -1,7 +1,7 @@
 <?php
-namespace PhpValidationCore;
+namespace PhpValidationCore\Validators;
 
-use PhpValidationCore\ValidationOptions\ValidationOptions;
+use PhpValidationCore\ValidationError;
 
 abstract class ValidatorBase 
 {
@@ -27,7 +27,7 @@ abstract class ValidatorBase
     function __construct(
         string $name, 
         string $propertyName, 
-        ValidationOptions $options,
+         $options,
         ) 
     {
         $this->name = ucfirst($name);

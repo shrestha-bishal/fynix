@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\ImageValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class ImagesValidator extends ValidatorBase {
     /**
