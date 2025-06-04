@@ -1,5 +1,5 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace ValidatePhpCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\EmailValidationOptions;
