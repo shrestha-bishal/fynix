@@ -31,6 +31,12 @@ class ValidationRegistry {
         return self::$registry[$className];
     }
 
+    public static function getRules(string $className, object $instance) : array {
+        $resolver = ValidationRegistry::getResolver($className);
+        $rules = $resolver($instance);
+        return $rules;
+    }
+
     public static function clearCache() : void {
         self::$registry = [];
     }
