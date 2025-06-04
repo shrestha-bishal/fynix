@@ -1,9 +1,6 @@
 <?php 
 namespace PhpValidationCore\Validators;
 
-use PhpValidationCore\ValidationOptions\ObjectValidationOptions;
-use PhpValidationCore\ValidationRegistry;
-
 /**
  * Class ObjectValidator
  *
