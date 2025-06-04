@@ -1,7 +1,7 @@
 <?php 
 namespace PhpValidationCore\ValidationOptions;
 
-class EmailValidationOptions extends ValidationOptions {
+class EmailValidationOptions extends ValidationOptionsBase {
     public function __construct(
         array $length = ['min' => 6, 'max' => 100],
         bool $isRequired = true,

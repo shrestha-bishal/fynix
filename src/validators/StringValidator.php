@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\StringValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class StringValidator extends ValidatorBase {
     /**
