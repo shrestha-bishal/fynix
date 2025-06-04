@@ -13,9 +13,6 @@
     "require": {
         "php": ">=7.4"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^9.6"
-    },
     "autoload": {
         "psr-4": {
             "PhpValidationCore\\": "src/"
@@ -28,5 +25,8 @@
         "php",
         "library",
         "data-validation"
-    ]
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^12.1"
+    }
 }
