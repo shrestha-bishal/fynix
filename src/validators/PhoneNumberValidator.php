@@ -3,7 +3,6 @@ namespace PhpValidationCore\Validators;
 
 use PhpValidationCore\ValidationError;
 use PhpValidationCore\ValidationOptions\PhoneNumberValidationOptions;
-use PhpValidationCore\ValidatorBase;
 
 class PhoneNumberValidator extends ValidatorBase 
 {

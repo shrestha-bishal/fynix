@@ -18,7 +18,7 @@ namespace PhpValidationCore\ValidationOptions;
  * - ?array $length: Length constraints, with keys 'min' and 'max'.
  */
 
-abstract class ValidationOptions {
+abstract class ValidationOptionsBase {
     public bool $includeGenericValidation;
     public string $fieldType;
     public bool $isRequired; 
