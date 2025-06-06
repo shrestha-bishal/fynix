@@ -112,4 +112,9 @@ class ValidationHandler {
 
         return $flattened;
     }
+
+    public static function validateAndFlatten(object $instance) {
+        $errors = self::validate($instance);
+        return self::flattenValidationErrors($errors);
+    }
 }
