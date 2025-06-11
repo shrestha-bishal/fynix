@@ -65,6 +65,25 @@ class ValidationHandler {
         return Validator::getValidationErrors($rules, $instance, $flattenErrorToString);
     }
 
+    public static function validateMany(object ...$instances) {
+        $errors = [];
+
+        foreach($instances as$instance) {
+            $errors[] = self::validate($instance);
+        }
+
+        return $errors;
+    }
+
+    public static function validateManyAssoc(array $instances, $flattenErrorToString = true) : array {
+        $errors = [];
+
+        foreach($instances as $key => $instance) {
+            $errors[$key] = self::validate($instance, $flattenErrorToString);
+        }
+
+        return $errors;
+    }
 
     /**
      * Flattens a nested validation error array into a dot-notated flat structure.
