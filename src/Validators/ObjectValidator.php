@@ -13,6 +13,6 @@ class ObjectValidator {
      * @param string $registeredClassName The class name whose validator is registered in ValidationRegistry using register().
      */
     public function __construct(
-        public string $propertyName,
-        public string $className) {}
+        public string $className,
+        public string $propertyName) {}
 }

@@ -21,6 +21,6 @@ namespace PhpValidationCore\Validators;
  */
 class ObjectArrayValidator {
     public function __construct(
-        public string $propertyName,
-        public string $className) {}
+        public string $className,
+        public string $propertyName) {}
 }
