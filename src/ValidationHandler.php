@@ -115,7 +115,7 @@ class ValidationHandler {
      * @param string $parentKey The prefix for keys during recursion (used internally).
      * @return array A flat array with dot-notated keys and corresponding messages.
      */
-    public static function flattenValidationErrors(array $errors, string $parentKey = '') : array 
+    public static function normaliseValidationErrors(array $errors, string $parentKey = '') : array 
     {
         $flattened = [];
 
@@ -123,7 +123,7 @@ class ValidationHandler {
             $dotKey = $parentKey === '' ? (string)$key : "{$parentKey}.{$key}";
 
             if(is_array($value)) {
-                $flattened += self::flattenValidationErrors($value, $dotKey);
+                $flattened += self::normaliseValidationErrors($value, $dotKey);
             }else {
                 $flattened[$dotKey] = $value;
             }
@@ -132,8 +132,8 @@ class ValidationHandler {
         return $flattened;
     }
 
-    public static function validateAndFlatten(object $instance) {
+    public static function validateAndNormalise(object $instance) {
         $errors = self::validate($instance);
-        return self::flattenValidationErrors($errors);
+        return self::normaliseValidationErrors($errors);
     }
 }
