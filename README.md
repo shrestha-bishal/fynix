@@ -66,17 +66,18 @@
     - [Full User Registration Validation](#example-full-user-registration-validation)
 
 8. [Advanced Usage](#advanced-usage)
-   - Batch Validation
-   - Associative Validation
-   - Error Normalization
-   - Registering Custom Validation Rules
-   - Reusable Validation Instances (DTOs)
+    - [Batch Validation](#batch-validation)
+    - [Associative Validation](#associative-validation)
+    - [Error Normalization](#error-normalization)
+    - [Registering Custom Validation Rules](#registering-custom-validation-rules)
+    - [Reusable Validation Instances - More modern way](#reusable-validation-instances---more-modern-way)
 
 9. [Core Classes and Their Roles](#core-classes-and-their-roles)
-   - Validator
-   - ValidationHandler
-   - ValidationRegistry
-   - ValidationError
+    - [Validator](#validator)
+    - [ValidationHandler](#validationhandler)
+    - [ValidationRegistry](#validationregistry)
+    - [ValidationError](#validationerror)
+
 
 10. [Extending the Library](#extending-the-library)
     - Creating Custom Validators
@@ -504,6 +505,8 @@ $errors = ValidationHandler::validateManyAssoc($instances);
 ```php
 $errors = ValidationHandler::validate($user);
 $flatErrors = ValidationHandler::normaliseValidationErrors($errors);
+![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
+![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 ```
 
 ### Registering Custom Validation Rules
@@ -633,8 +636,6 @@ class ValidationRuleServiceProvider extends ServiceProvider
     if(count($errors) > 0) 
         return;
 ```
-![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
-![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 ---
 
 ## Core Classes and Their Roles
@@ -678,7 +679,6 @@ class CustomValidator extends ValidatorBase {
 ```
 
 ## Best Practices & Advanced Patterns
-
 - **Centralize Validation Logic**: Use `ValidationRegistry` to keep validation rules organized and reusable for each class.
 - **Normalize Errors for UI**: Use `ValidationHandler::normaliseValidationErrors()` to flatten errors for form binding and display.
 - **Custom Validators**: Extend `ValidatorBase` for domain-specific validation needs.
