@@ -15,6 +15,7 @@
 - [Testing](#testing)
 - [Contributing](#contributing)
 - [License](#license)
+- [Support the Project](#funding-and-sponsorship)
 
 ## Features
 - **Comprehensive Validation**: Strings, numbers, emails, phone numbers, passwords, images, arrays of images, nested objects, and arrays of objects.
@@ -384,6 +385,17 @@ class ValidationRuleServiceProvider extends ServiceProvider
     }
 }
 
+```
+
+and wherever needed just call with the dto class instance
+```php
+<?php
+    $dto = DtoMapper::toFreightDto($args);
+    $errors = ValidationHandler::validate($dto);
+    $flattenedErrors = ValidationHandler::flattenValidationErrors($errors);
+    
+    if(count($errors) > 0) 
+        return;
 ```
 
 
