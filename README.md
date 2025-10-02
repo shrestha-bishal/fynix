@@ -127,6 +127,10 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 
 ## Table of Contents
 - [Features](#features)
+- [Architecture Overview](#architecture-overview)
+- [Validator Classes](#validator-classes)
+- [Validator Options](#validator-options)
+- [Validation Matrix](#validation-matrix)
 - [Installation](#installation)
 - [Testing](#testing)
 - [Contributing](#contributing)
@@ -144,6 +148,57 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 - **Open Source**: MIT-licensed and open for contributions.
 
 --- 
+
+## Architecture Overview
+
+The library is organized into several core components:
+- **Validator Classes**: Each validator encapsulates logic for a specific data type or structure.
+- **Validator Options**: Option classes provide configuration for validators, such as length, required status, and custom constraints.
+- **ValidationHandler**: Orchestrates validation, supports batch and associative validation, and error normalization.
+- **ValidationRegistry**: Central registry for registering and retrieving validation rules for custom classes.
+- **ValidationError**: Standardized error object for all validators.
+
+## Validator Classes
+
+| Validator                | Description                                                                                   | Options Class                   | Key Options                                                                                   |
+|--------------------------|-----------------------------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------|
+| StringValidator          | Validates string type, length, nullability, and excludes HTML tags.                           | StringValidationOptions          | `length`, `isRequired`, `includeGenericValidation`                                            |
+| NumberValidator          | Validates numeric type and enforces min/max value constraints.                                | NumberValidationOptions          | `length`, `number` (min/max), `isRequired`, `includeGenericValidation`                        |
+| EmailValidator           | Validates email format, DNS, uniqueness, and structure.                                       | EmailValidationOptions           | `length`, `isUsername`, `isRequired`, `includeGenericValidation`                              |
+| PhoneNumberValidator     | Validates phone number format, allowed symbols, and length.                                   | PhoneNumberValidationOptions     | `length`, `isRequired`, `includeGenericValidation`                                            |
+| PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | PasswordValidationOptions        | `length`, `isRequired`, `includeGenericValidation`                                            |
+| ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
+| ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
+| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | ObjectValidationOptions          | `validateOnNull`                                                                             |
+| ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | N/A                              | N/A     
+
+## Validator Options
+
+All validators accept an options object to configure their behavior. These options classes allow fine-tuning of validation logic for each field type.
+
+| Class Name                     | Description | Key Properties / Options |
+|--------------------------------|-------------|--------------------------|
+| **ValidationOptionsBase**       | Common base for all options classes | `includeGenericValidation`, `fieldType`, `isRequired`, `length` (min/max array) |
+| **StringValidationOptions**     | Controls string validation | `length` (min/max, default: 2-50), `isRequired` (default: true), `includeGenericValidation` (default: true) |
+| **NumberValidationOptions**     | Controls number validation | `length` (string length), `number` (min/max numeric value), `isRequired`, `includeGenericValidation` |
+| **EmailValidationOptions**      | Controls email validation | `length` (min/max), `isUsername` (check username uniqueness), `isRequired`, `includeGenericValidation` |
+| **PhoneNumberValidationOptions**| Controls phone number validation | `length` (min/max), `isRequired`, `includeGenericValidation` |
+| **PasswordValidationOptions**   | Controls password validation | `length` (min/max), `isRequired`, `includeGenericValidation` |
+| **ImageValidationOptions**      | Controls image validation | `numImage` (min/max), `maxFileSizeMB`, `isRequired`, `includeGenericValidation` |
+| **ObjectValidationOptions**     | Controls nested object validation | `validateOnNull` (whether to validate when the object is null) |
+
+## Validation Matrix
+
+| Feature                  | String | Number | Email | Phone | Password | Image | Images | Object | ObjectArray |
+|--------------------------|--------|--------|-------|-------|----------|-------|--------|--------|------------|
+| Nullability              | ✓      | ✓      | ✓     | ✓     | ✓        | ✓     | ✓      | ✓      | ✓          |
+| Min/Max Length           | ✓      | ✓      | ✓     | ✓     | ✓        |       |        |        |            |
+| Min/Max Number           |        | ✓      |       |       |          |       |        |        |            |
+| HTML Exclusion           | ✓      |        | ✓     |       |          |       |        |        |            |
+| Format/Pattern           |        |        | ✓     | ✓     | ✓        | ✓     | ✓      |        |            |
+| Uniqueness/Existence     |        |        | ✓     |       | ✓        |       |        |        |            |
+| Nested Validation        |        |        |       |       |          |       |        | ✓      | ✓          |
+| Array Validation         |        |        |       |       |          |       | ✓      |        | ✓          |
 
 ## Installation
 
