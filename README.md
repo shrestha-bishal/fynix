@@ -125,18 +125,127 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 ![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 ---
 
-## Table of Contents
-- [Features](#features)
-- [Architecture Overview](#architecture-overview)
-- [Validator Classes](#validator-classes)
-- [Validator Options](#validator-options)
-- [Validation Matrix](#validation-matrix)
-- [Installation](#installation)
-- [Testing](#testing)
-- [Contributing](#contributing)
-- [Support the Project](#funding--sponsorship)
-- [License](#license)
-- [Author](#author)
+# Table of Contents
+
+1. [Features](#features)
+   - [Comprehensive Validation](#comprehensive-validation)
+     - Strings
+     - Numbers
+     - Emails
+     - Phone Numbers
+     - Passwords
+     - Images
+     - Arrays of Images
+     - Nested Objects
+     - Arrays of Objects
+   - [Extensible Architecture](#extensible-architecture)
+   - [Validator Options](#validator-options)
+   - [Nested & Array Validation](#nested--array-validation)
+   - [Error Normalization](#error-normalization)
+   - [Centralized Registry](#centralized-registry)
+   - [Open Source](#open-source)
+
+2. [Architecture Overview](#architecture-overview)
+   - [Core Components](#core-components)
+     - Validator Classes
+     - Validator Options
+     - ValidationHandler
+     - ValidationRegistry
+     - ValidationError
+
+3. [Validator Classes](#validator-classes)
+   - ValidatorBase
+   - StringValidator
+   - NumberValidator
+   - EmailValidator
+   - PhoneNumberValidator
+   - PasswordValidator
+   - ImageValidator
+   - ImagesValidator
+   - ObjectValidator
+   - ObjectArrayValidator
+
+4. [Validator Options](#validator-options)
+   - ValidationOptionsBase
+   - StringValidationOptions
+   - NumberValidationOptions
+   - EmailValidationOptions
+   - PhoneNumberValidationOptions
+   - PasswordValidationOptions
+   - ImageValidationOptions
+   - ObjectValidationOptions
+
+5. [Validation Matrix](#validation-matrix)
+   - Feature Comparison Table
+   - Key Capabilities
+     - Nullability
+     - Min/Max Length
+     - Min/Max Number
+     - HTML Exclusion
+     - Format/Pattern
+     - Uniqueness/Existence
+     - Nested Validation
+     - Array Validation
+
+6. [Usage Examples](#usage-examples)
+   - Basic String Validation
+   - Email Validation with Options
+   - Number Validation
+   - Password Validation
+   - Image Validation
+   - Nested Object Validation
+   - Array of Objects Validation
+   - Example: Full User Registration Validation
+
+7. [Advanced Usage](#advanced-usage)
+   - Batch Validation
+   - Associative Validation
+   - Error Normalization
+   - Registering Custom Validation Rules
+   - Reusable Validation Instances (DTOs)
+
+8. [Core Classes and Their Roles](#core-classes-and-their-roles)
+   - Validator
+   - ValidationHandler
+   - ValidationRegistry
+   - ValidationError
+
+9. [Extending the Library](#extending-the-library)
+    - Creating Custom Validators
+    - Creating Custom Options Classes
+
+10. [Best Practices & Advanced Patterns](#best-practices--advanced-patterns)
+    - Centralize Validation Logic
+    - Normalize Errors for UI
+    - Custom Validators
+    - Custom Options
+    - Batch Validation
+
+11. [Installation](#installation)
+
+12. [Testing](#testing)
+
+13. [Contributing](#contributing)
+    - Forking & Branching
+    - Committing
+    - Running Tests
+    - Pull Requests
+    - Reporting Issues
+
+14. [Funding & Sponsorship](#funding--sponsorship)
+    - [Support Options](#support-options)
+      - GitHub Sponsors
+      - Buy Me a Coffee
+      - Thanks.dev
+
+15. [License](#license)
+
+16. [Author](#author)
+    - GitHub Profile
+    - Repository
+    - Website
+    - Packagist Link
+
 
 ## Features
 - **Comprehensive Validation**: Strings, numbers, emails, phone numbers, passwords, images, arrays of images, nested objects, and arrays of objects.
@@ -172,6 +281,71 @@ The library is organized into several core components:
 | ObjectValidator          | Validates a nested object property using registered rules for its class.                      | ObjectValidationOptions          | `validateOnNull`                                                                             |
 | ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | N/A                              | N/A     
 
+### ValidatorBase
+Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion) and requires child classes to implement `validate($fieldValue)` for specific logic.
+
+### StringValidator
+Validates string type, length, nullability, and excludes HTML tags. Usage:
+```php
+$options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
+$validator = new StringValidator('First Name', 'firstName', $options);
+```
+
+### NumberValidator
+Validates numeric type and enforces min/max value constraints. Usage:
+```php
+$options = new NumberValidationOptions(['min' => 1, 'max' => 30], true, true, ['min' => 18, 'max' => 99]);
+$validator = new NumberValidator('Age', 'age', $options);
+```
+
+### EmailValidator
+Validates email format, DNS, uniqueness, and structure. Usage:
+```php
+$options = new EmailValidationOptions(['min' => 6, 'max' => 100], true, true, true);
+$validator = new EmailValidator('Email', 'email', $options);
+```
+
+### PhoneNumberValidator
+Validates phone number format, allowed symbols, and length. Usage:
+```php
+$options = new PhoneNumberValidationOptions(['min' => 10, 'max' => 12], true);
+$validator = new PhoneNumberValidator('Phone', 'phoneNumber', $options);
+```
+
+### PasswordValidator
+Enforces password strength: uppercase, lowercase, number, special character, length. Usage:
+```php
+$options = new PasswordValidationOptions(['min' => 8, 'max' => 30], true);
+$validator = new PasswordValidator('Password', 'password', $options);
+```
+
+### ImageValidator
+Validates a single image file: size, extension, and actual image content. Usage:
+```php
+$options = new ImageValidationOptions(['min' => 1, 'max' => 1], true, false, 5);
+$validator = new ImageValidator('Profile Picture', 'profilePic', $options);
+```
+
+### ImagesValidator
+Validates an array of image files, each using ImageValidator. Usage:
+```php
+$options = new ImageValidationOptions(['min' => 1, 'max' => 5], true, false, 5);
+$validator = new ImagesValidator('Gallery', 'galleryImages', $options);
+```
+
+### ObjectValidator
+Validates a nested object property using registered rules for its class. Usage:
+```php
+$options = new ObjectValidationOptions();
+$validator = new ObjectValidator(UserAddress::class, 'address', $options);
+```
+
+### ObjectArrayValidator
+Validates an array of objects, each using registered rules for its class. Usage:
+```php
+$validator = new ObjectArrayValidator(FreightItemDto::class, 'items');
+```
+
 ## Validator Options
 
 All validators accept an options object to configure their behavior. These options classes allow fine-tuning of validation logic for each field type.
@@ -199,6 +373,326 @@ All validators accept an options object to configure their behavior. These optio
 | Uniqueness/Existence     |        |        | ✓     |       | ✓        |       |        |        |            |
 | Nested Validation        |        |        |       |       |          |       |        | ✓      | ✓          |
 | Array Validation         |        |        |       |       |          |       | ✓      |        | ✓          |
+
+## Usage Examples
+### Basic String Validation
+```php
+use PhpValidationCore\Validators\StringValidator;
+use PhpValidationCore\ValidationOptions\StringValidationOptions;
+
+$options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
+$stringValidator = new StringValidator('First Name', 'firstName', $options);
+```
+
+### Email Validation with Options
+```php
+use PhpValidationCore\Validators\EmailValidator;
+use PhpValidationCore\ValidationOptions\EmailValidationOptions;
+
+$emailOptions = new EmailValidationOptions(['min' => 6, 'max' => 100], true, true, true);
+$emailValidator = new EmailValidator('Email', 'email', $emailOptions);
+```
+
+### Number Validation
+```php
+use PhpValidationCore\Validators\NumberValidator;
+use PhpValidationCore\ValidationOptions\NumberValidationOptions;
+
+$numberOptions = new NumberValidationOptions(['min' => 1, 'max' => 30], true, true, ['min' => 18, 'max' => 99]);
+$numberValidator = new NumberValidator('Age', 'age', $numberOptions);
+```
+
+### Password Validation
+```php
+use PhpValidationCore\Validators\PasswordValidator;
+use PhpValidationCore\ValidationOptions\PasswordValidationOptions;
+
+$passwordOptions = new PasswordValidationOptions(['min' => 8, 'max' => 30], true);
+$passwordValidator = new PasswordValidator('Password', 'password', $passwordOptions);
+```
+
+### Image Validation
+```php
+use PhpValidationCore\Validators\ImageValidator;
+use PhpValidationCore\ValidationOptions\ImageValidationOptions;
+
+$imageOptions = new ImageValidationOptions(['min' => 1, 'max' => 1], true, false, 5);
+$imageValidator = new ImageValidator('Profile Picture', 'profilePic', $imageOptions);
+```
+
+### Nested Object Validation
+```php
+use PhpValidationCore\Validators\ObjectValidator;
+use PhpValidationCore\ValidationOptions\ObjectValidationOptions;
+
+$objectOptions = new ObjectValidationOptions();
+$objectValidator = new ObjectValidator(UserAddress::class, 'address', $objectOptions);
+```
+
+### Array of Objects Validation
+```php
+use PhpValidationCore\Validators\ObjectArrayValidator;
+
+$objectArrayValidator = new ObjectArrayValidator(FreightItemDto::class, 'items');
+```
+
+### Example: Full User Registration Validation
+
+Below is a practical example showing how to use the library for a user registration form with multiple fields and nested validation:
+
+```php
+use PhpValidationCore\Validators\StringValidator;
+use PhpValidationCore\Validators\EmailValidator;
+use PhpValidationCore\Validators\PasswordValidator;
+use PhpValidationCore\Validators\ObjectValidator;
+use PhpValidationCore\ValidationRegistry;
+use PhpValidationCore\ValidationHandler;
+
+class UserAddress {
+    public ?string $street = null;
+    public ?string $city = null;
+    public ?string $postcode = null;
+}
+
+class User {
+    public ?string $firstName = null;
+    public ?string $email = null;
+    public ?string $password = null;
+    public ?UserAddress $address = null;
+
+    public static function getValidationRules($instance) {
+        return [
+            new StringValidator('First Name', 'firstName'),
+            new EmailValidator('Email', 'email'),
+            new PasswordValidator('Password', 'password'),
+            new ObjectValidator(UserAddress::class, 'address'),
+        ];
+    }
+}
+
+ValidationRegistry::register(User::class, [User::class, 'getValidationRules']);
+ValidationRegistry::register(UserAddress::class, function($instance) {
+    return [
+        new StringValidator('Street', 'street'),
+        new StringValidator('City', 'city'),
+        new StringValidator('Postcode', 'postcode'),
+    ];
+});
+
+$user = new User();
+$user->firstName = 'John';
+$user->email = 'john@example.com';
+$user->password = 'Password123!';
+$user->address = new UserAddress();
+$user->address->street = '123 Main St';
+$user->address->city = 'Metropolis';
+$user->address->postcode = '12345';
+
+$errors = ValidationHandler::validate($user);
+if (!empty($errors)) {
+    // Handle errors
+}
+```
+---
+
+## Advanced Usage
+### Batch Validation
+```php
+use PhpValidationCore\ValidationHandler;
+
+$errors = ValidationHandler::validateMany($user, $profile, $settings);
+```
+
+### Associative Validation
+```php
+$instances = ['user' => $user, 'profile' => $profile];
+$errors = ValidationHandler::validateManyAssoc($instances);
+```
+
+### Error Normalization
+```php
+$errors = ValidationHandler::validate($user);
+$flatErrors = ValidationHandler::normaliseValidationErrors($errors);
+```
+
+### Registering Custom Validation Rules
+```php
+use PhpValidationCore\ValidationRegistry;
+
+ValidationRegistry::register(User::class, function($instance) {
+    return [
+        new StringValidator('First Name', 'firstName'),
+        new EmailValidator('Email', 'email'),
+        // ... other rules
+    ];
+});
+```
+
+### Reusable Validation Instances - More modern way
+`php-validation-core` allows you to define reusable validation rules for your **data transfer objects (DTOs)** using the `ValidationRegistry`.
+The `ValidationRuleServiceProvider` demonstrates how to register validation rules for multiple DTOs in a structured and type-safe way.
+
+```php
+<?php
+
+namespace App\Providers;
+
+use App\Dto\Address\AddressDto;
+use App\Dto\DimensionDto;
+use App\Dto\Quote\FreightDto;
+use App\Dto\Quote\ItemDto;
+use App\Dto\Quote\PackageDto;
+use Illuminate\Support\ServiceProvider;
+use PhpValidationCore\ValidationOptions\NumberValidationOptions;
+use PhpValidationCore\ValidationOptions\StringValidationOptions;
+use PhpValidationCore\ValidationRegistry;
+use PhpValidationCore\Validators\NumberValidator;
+use PhpValidationCore\Validators\ObjectArrayValidator;
+use PhpValidationCore\Validators\ObjectValidator;
+use PhpValidationCore\Validators\StringValidator;
+
+class ValidationRuleServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        self::registerDimensionValidation();
+        self::registerItemValidation();
+        self::registerAddressValidation();
+        self::registerShippingValidation();
+        self::registerPackageValidation();
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        //
+    }
+
+    private static function registerDimensionValidation() : void {
+        ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
+            return [
+                new NumberValidator('Length', 'lengthCm', new NumberValidationOptions(number: [1, 1800])),
+                new NumberValidator('Width', 'widthCm', new NumberValidationOptions(number: [1, 1800])),
+                new NumberValidator('Height', 'heightCm', new NumberValidationOptions(number: [1, 2000])),
+                new NumberValidator('Weight', 'weightKg', new NumberValidationOptions(number: [1, 1000]))
+            ];
+        });
+    }
+
+    private static function registerItemValidation() : void
+    {
+       ValidationRegistry::register(ItemDto::class, function (ItemDto $dto) {
+            return [
+                new StringValidator('Description', 'description'),
+                new ObjectValidator('dimension', DimensionDto::class),
+           ];
+       });
+    }
+
+    private static function registerAddressValidation() : void 
+    {
+        ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
+            return [
+                new StringValidator('Suburb', 'suburb'),
+                new NumberValidator('Postcode', 'postcode', new NumberValidationOptions(length: [2, 10])),
+                new StringValidator('State', 'state', new StringValidationOptions(length: [2, 6])),
+                new StringValidator('Country', 'countryCode', new StringValidationOptions(length: [2, 4]))
+            ];
+        });
+    }
+
+    private static function registerShippingValidation(): void 
+    {
+        ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
+            return[
+                new ObjectArrayValidator('packages', PackageDto::class),
+                new StringValidator('Customer name', 'customerName', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                new ObjectValidator('pickupAddress', AddressDto::class),
+                new ObjectValidator('deliveryAddress', AddressDto::class),
+            ];
+        });
+    }
+
+    private static function registerPackageValidation(): void {
+        ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
+            return [
+                new StringValidator('Package Type', 'type'),
+                new StringValidator('Description', 'description', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                new ObjectValidator('dimensions', DimensionDto::class),
+                new ObjectArrayValidator('items', ItemDto::class)
+            ];
+        });
+    }
+}
+
+```
+
+- and wherever needed just call with the dto class instance
+```php
+<?php
+    $dto = DtoMapper::toFreightDto($args);
+    $errors = ValidationHandler::validate($dto);
+    $flattenedErrors = ValidationHandler::flattenValidationErrors($errors);
+    
+    if(count($errors) > 0) 
+        return;
+```
+![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
+![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
+---
+
+## Core Classes and Their Roles
+
+### Validator
+The central utility for validating data objects against rules. It provides static methods to retrieve validation errors for a given object and set of rules. Handles nested and array validation, returning errors as either strings or `ValidationError` objects.
+
+### ValidationHandler
+Orchestrates the validation process for single objects, arrays, or associative arrays. Supports error normalization (flattening nested error arrays to dot notation for easy form binding). Example:
+```php
+$errors = ValidationHandler::validate($user);
+$flatErrors = ValidationHandler::normaliseValidationErrors($errors);
+```
+
+### ValidationRegistry
+Implements a registry pattern for associating classes with their validation rules. Register rules for a class and retrieve them dynamically during validation. Example:
+```php
+ValidationRegistry::register(User::class, function($instance) {
+    return [
+        new StringValidator('First Name', 'firstName'),
+        new EmailValidator('Email', 'email'),
+        // ...
+    ];
+});
+```
+
+### ValidationError
+Represents a validation error, including the rule, error message, and field name. Used for structured error reporting and debugging.
+---
+
+## Extending the Library
+
+You can create your own custom validators by extending `ValidatorBase` and implementing the `validate($fieldValue)` method. Custom option classes can also be created by extending `ValidationOptionsBase`.
+
+```php
+class CustomValidator extends ValidatorBase {
+    public function validate($fieldValue) : ?ValidationError {
+        // Custom validation logic
+    }
+}
+```
+
+## Best Practices & Advanced Patterns
+
+- **Centralize Validation Logic**: Use `ValidationRegistry` to keep validation rules organized and reusable for each class.
+- **Normalize Errors for UI**: Use `ValidationHandler::normaliseValidationErrors()` to flatten errors for form binding and display.
+- **Custom Validators**: Extend `ValidatorBase` for domain-specific validation needs.
+- **Custom Options**: Extend `ValidationOptionsBase` to add new configuration parameters for your validators.
+- **Batch Validation**: Validate multiple objects at once with `ValidationHandler::validateMany()` or associative arrays with `validateManyAssoc()`.
 
 ## Installation
 
