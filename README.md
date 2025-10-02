@@ -419,3 +419,49 @@ $validator = new ObjectArrayValidator(FreightItemDto::class, 'items');
 - **Custom Options**: Extend `ValidationOptionsBase` to add new configuration parameters for your validators.
 - **Batch Validation**: Validate multiple objects at once with `ValidationHandler::validateMany()` or associative arrays with `validateManyAssoc()`.
 
+## Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository.
+2. Create a feature branch (`git checkout -b feature-name`).
+3. Make your changes and commit them with clear messages.
+4. Run tests to ensure nothing is broken.
+5. Submit a pull request explaining your changes.
+
+For bug reports or feature requests, please open an issue on GitHub.
+
+## Funding & Sponsorship
+
+`php-validation-core` is an open-source project maintained with care to deliver a reliable and extensible validation engine for PHP developers.  
+If you or your organization find this project valuable, please consider supporting its development. Your sponsorship helps sustain long-term maintenance, improve features and documentation, and keep the library freely available to the community.  
+
+As a token of appreciation, sponsors may have their logo and link featured in the project README and documentation site.  
+Priority support and early access to planned features may also be offered where appropriate.  
+
+### Support Options
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub%20Sponsors-Become%20a%20Sponsor-blueviolet?logo=githubsponsors&style=flat-square)](https://github.com/sponsors/shrestha-bishal)  
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Support%20Developer-yellow?logo=buymeacoffee&style=flat-square)](https://www.buymeacoffee.com/shresthabishal)  
+[![Thanks.dev](https://img.shields.io/badge/Thanks.dev-Appreciate%20Open%20Source-29abe0?logo=github&style=flat-square)](https://thanks.dev/gh/shrestha-bishal)  
+
+---
+
+## License
+
+This project is licensed under the [MIT License](./LICENSE).  
+
+---
+
+## Author
+
+**Bishal Shrestha**  
+
+[![GitHub](https://img.shields.io/badge/GitHub-Profile-black?logo=github)](https://github.com/shrestha-bishal)  
+[![Repo](https://img.shields.io/badge/Repository-GitHub-black?logo=github)](https://github.com/shrestha-bishal/php-validation-core)  
+[Website](https://php-validation-core.netlify.app) *(coming soon)*  
+
+© 2025 Bishal Shrestha, All rights reserved  
+
+[![Packagist](https://img.shields.io/badge/Packagist-View%20Package-orange?logo=packagist&style=flat-square)](https://packagist.org/packages/shrestha-bishal/php-validation-core)  
+
+![banner](https://github.com/user-attachments/assets/0a8ba9c9-90c8-4461-bfb4-e996e55bd29a)
