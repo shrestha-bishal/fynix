@@ -1,6 +1,6 @@
 {
-    "name": "bishal-shrestha/php-validation-core",
-    "description": "php-validation-core is a lightweight and extensible PHP validation library that provides common data validation methods for strings, numbers, emails, phone numbers, images, and more. Simple to integrate and optimized for performance, it's perfect for ensuring data integrity in PHP applications.",
+    "name": "bishalshrestha/php-validation-core",
+    "description": "A modern, extensible PHP library for validating primitive data types, files, nested objects, and arrays of objects with reusable and centralized validation rules.",
     "type": "library",
     "license": "MIT",
     "authors": [
@@ -10,8 +10,14 @@
             "homepage": "https://github.com/shrestha-bishal"
         }
     ],
+    "homepage": "https://github.com/shrestha-bishal/php-validation-core",
+    "support": {
+        "issues": "https://github.com/shrestha-bishal/php-validation-core/issues",
+        "source": "https://github.com/shrestha-bishal/php-validation-core",
+        "docs": "https://github.com/shrestha-bishal/php-validation-core#readme"
+    },
     "require": {
-        "php": ">=7.4"
+        "php": ">=8.0"
     },
     "autoload": {
         "psr-4": {
@@ -19,14 +25,99 @@
         }
     },
     "minimum-stability": "dev",
-    "prefer-stable": true,
-    "keywords": [
-        "validation",
-        "php",
-        "library",
-        "data-validation"
-    ],
+    "prefer-stable": true, 
     "require-dev": {
         "phpunit/phpunit": "^12.1"
-    }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-main": "1.0-dev"
+        },
+        "readme": "README.md",
+        "funding": [
+            {
+                "type": "github",
+                "url": "https://github.com/sponsors/shrestha-bishal"
+            },
+            {
+                "type": "buy-me-a-coffee",
+                "url": "https://www.buymeacoffee.com/shresthabishal"
+            },
+            {
+                "type": "thanks-dev",
+                "url": "https://thanks.dev/gh/shrestha-bishal"
+            }
+        ]
+    },
+    "keywords": [
+        "php",
+        "php library",
+        "php package",
+        "composer",
+        "validation",
+        "php validation",
+        "data validation",
+        "dto validation",
+        "object validation",
+        "nested object validation",
+        "array validation",
+        "array of objects",
+        "string validation",
+        "number validation",
+        "email validation",
+        "password validation",
+        "phone validation",
+        "image validation",
+        "file validation",
+        "form validation",
+        "input validation",
+        "api validation",
+        "backend validation",
+        "php data integrity",
+        "php objects",
+        "php dto",
+        "php entity",
+        "data integrity",
+        "validation core",
+        "validation engine",
+        "centralized validation",
+        "reusable validation",
+        "custom validators",
+        "validation rules",
+        "batch validation",
+        "associative validation",
+        "error normalization",
+        "validation handler",
+        "validation registry",
+        "modern php",
+        "php 8",
+        "extensible php",
+        "robust validation",
+        "developer productivity",
+        "enterprise php",
+        "php framework",
+        "laravel validation",
+        "symfony validation",
+        "php oop",
+        "php types",
+        "typed properties",
+        "php nested arrays",
+        "validation library",
+        "data processing",
+        "data consistency",
+        "php forms",
+        "validation utils",
+        "input sanitizer",
+        "field validation",
+        "dto mapping",
+        "object mapping",
+        "validation patterns",
+        "php best practices",
+        "php packages",
+        "open source php",
+        "php validation bundle",
+        "data validation library",
+        "form input validation",
+        "nested dto validation"
+    ]
 }
