@@ -4,90 +4,66 @@
 
 # Table of Contents
 
-1. [Overview](#overview)
-   - [Overview Example](#overview-example)
-     - [FreightDto](#freightdto)
-     - [Nested DTO Structure](#nested-dto-structure)
-   - [Setting Up Validation](#setting-up-validation)
-     - [Registering Dimension Validation](#registering-dimension-validation)
-     - [Registering Item Validation](#registering-item-validation)
-     - [Registering Address Validation](#registering-address-validation)
-     - [Registering Shipping Validation](#registering-shipping-validation)
-     - [Registering Package Validation](#registering-package-validation)
-   - [Validating DTOs](#validating-dtos)
-   - [Visual Examples](#visual-examples)
-     - [Validation Example Image](#validation-example-image)
-     - [Flattened Validation Example Image](#flattened-validation-example-image)
+1. [Overview Example](#overview-example)
+    - [FreightDto](#freightdto)
+    - [Nested DTO Structure](#nested-dto-structure)
+    - [Setting Up Example Validation](#setting-up-example-validation)
+    - [Validating DTOs](#validating-dtos)
+    - [Validation Example Image](#validation-example-image)
+    - [Flattened Validation Example Image](#flattened-validation-example-image)
 
 2. [Features](#features)
-   - [Comprehensive Validation](#comprehensive-validation)
-     - Strings
-     - Numbers
-     - Emails
-     - Phone Numbers
-     - Passwords
-     - Images
-     - Arrays of Images
-     - Nested Objects
-     - Arrays of Objects
-   - [Extensible Architecture](#extensible-architecture)
-   - [Validator Options](#validator-options)
-   - [Nested & Array Validation](#nested--array-validation)
-   - [Error Normalization](#error-normalization)
-   - [Centralized Registry](#centralized-registry)
-   - [Open Source](#open-source)
 
 3. [Architecture Overview](#architecture-overview)
-   - [Core Components](#core-components)
-     - Validator Classes
-     - Validator Options
-     - ValidationHandler
-     - ValidationRegistry
-     - ValidationError
+    - Validator Classes
+    - Validator Options
+    - ValidationHandler
+    - ValidationRegistry
+    - ValidationError
 
 4. [Validator Classes](#validator-classes)
-   - ValidatorBase
-   - StringValidator
-   - NumberValidator
-   - EmailValidator
-   - PhoneNumberValidator
-   - PasswordValidator
-   - ImageValidator
-   - ImagesValidator
-   - ObjectValidator
-   - ObjectArrayValidator
+    - ValidatorBase
+    - StringValidator
+    - NumberValidator
+    - EmailValidator
+    - PhoneNumberValidator
+    - PasswordValidator
+    - ImageValidator
+    - ImagesValidator
+    - ObjectValidator
+    - ObjectArrayValidator
 
 5. [Validator Options](#validator-options)
-   - ValidationOptionsBase
-   - StringValidationOptions
-   - NumberValidationOptions
-   - EmailValidationOptions
-   - PhoneNumberValidationOptions
-   - PasswordValidationOptions
-   - ImageValidationOptions
-   - ObjectValidationOptions
+    - ValidationOptionsBase
+    - StringValidationOptions
+    - NumberValidationOptions
+    - EmailValidationOptions
+    - PhoneNumberValidationOptions
+    - PasswordValidationOptions
+    - ImageValidationOptions
+    - ObjectValidationOptions
 
 6. [Validation Matrix](#validation-matrix)
-   - Feature Comparison Table
-   - Key Capabilities
-     - Nullability
-     - Min/Max Length
-     - Min/Max Number
-     - HTML Exclusion
-     - Format/Pattern
-     - Uniqueness/Existence
-     - Nested Validation
-     - Array Validation
+    - Feature Comparison Table
+    - Key Capabilities
+        - Nullability
+        - Min/Max Length
+        - Min/Max Number
+        - HTML Exclusion
+        - Format/Pattern
+        - Uniqueness/Existence
+        - Nested Validation
+        - Array Validation
 
-7. [Usage Examples](#usage-examples)
-   - Basic String Validation
-   - Email Validation with Options
-   - Number Validation
-   - Password Validation
-   - Image Validation
-   - Nested Object Validation
-   - Array of Objects Validation
-   - Example: Full User Registration Validation
+7. [Basic Usage Examples](#basic-usage-examples)
+    - [String Validation](#string-validation)
+    - [Email Validation](#email-validation)
+    - [Number Validation](#number-validation)
+    - [Password Validation](#password-validation)
+    - [Image Validation](#image-validation)
+    - [Nested Object Validation](#nested-object-validation)
+    - [Array of Objects Validation](#array-of-objects-validation)
+    - [Full User Registration Validation](#example-full-user-registration-validation)
 
 8. [Advanced Usage](#advanced-usage)
    - Batch Validation
@@ -161,15 +137,17 @@ class FreightDto {
     public AddressDto $pickupAddress;
     public AddressDto $deliveryAddress;
 }
+```
 
-// Nested DTO structure
+### Nested DTO Structure
+```
 $freight = new FreightDto();
 $freight->packages[] = (new PackageDto())->items[] = new ItemDto();
 $freight->pickupAddress = new AddressDto();
 $freight->deliveryAddress = new AddressDto();
 ```
 
-### Setting Up Validation
+### Setting Up Example Validation
 Validation rules are registered using the `ValidationRegistry`. You can organize rules by DTO type for better structure and maintainability.
 ```php
 <?php
@@ -257,8 +235,8 @@ Once your validation rules are registered, you can validate DTO instances anywhe
         return;
 ```
 
-![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
-![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
+![Validation Example Image](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
+![Flattened Validation Example Image](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 ---
 
 ## Features
@@ -388,8 +366,8 @@ All validators accept an options object to configure their behavior. These optio
 | Nested Validation        |        |        |       |       |          |       |        | ✓      | ✓          |
 | Array Validation         |        |        |       |       |          |       | ✓      |        | ✓          |
 
-## Usage Examples
-### Basic String Validation
+## Basic Usage Examples
+### String Validation
 ```php
 use PhpValidationCore\Validators\StringValidator;
 use PhpValidationCore\ValidationOptions\StringValidationOptions;
@@ -398,7 +376,7 @@ $options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
 $stringValidator = new StringValidator('First Name', 'firstName', $options);
 ```
 
-### Email Validation with Options
+### Email Validation
 ```php
 use PhpValidationCore\Validators\EmailValidator;
 use PhpValidationCore\ValidationOptions\EmailValidationOptions;
@@ -451,7 +429,6 @@ $objectArrayValidator = new ObjectArrayValidator(FreightItemDto::class, 'items')
 ```
 
 ### Example: Full User Registration Validation
-
 Below is a practical example showing how to use the library for a user registration form with multiple fields and nested validation:
 
 ```php
