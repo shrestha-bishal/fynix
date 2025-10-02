@@ -2,6 +2,142 @@
 
 **php-validation-core** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
 
+# Table of Contents
+
+1. [Overview](#overview)
+   - [Overview Example](#overview-example)
+     - [FreightDto](#freightdto)
+     - [Nested DTO Structure](#nested-dto-structure)
+   - [Setting Up Validation](#setting-up-validation)
+     - [Registering Dimension Validation](#registering-dimension-validation)
+     - [Registering Item Validation](#registering-item-validation)
+     - [Registering Address Validation](#registering-address-validation)
+     - [Registering Shipping Validation](#registering-shipping-validation)
+     - [Registering Package Validation](#registering-package-validation)
+   - [Validating DTOs](#validating-dtos)
+   - [Visual Examples](#visual-examples)
+     - [Validation Example Image](#validation-example-image)
+     - [Flattened Validation Example Image](#flattened-validation-example-image)
+
+2. [Features](#features)
+   - [Comprehensive Validation](#comprehensive-validation)
+     - Strings
+     - Numbers
+     - Emails
+     - Phone Numbers
+     - Passwords
+     - Images
+     - Arrays of Images
+     - Nested Objects
+     - Arrays of Objects
+   - [Extensible Architecture](#extensible-architecture)
+   - [Validator Options](#validator-options)
+   - [Nested & Array Validation](#nested--array-validation)
+   - [Error Normalization](#error-normalization)
+   - [Centralized Registry](#centralized-registry)
+   - [Open Source](#open-source)
+
+3. [Architecture Overview](#architecture-overview)
+   - [Core Components](#core-components)
+     - Validator Classes
+     - Validator Options
+     - ValidationHandler
+     - ValidationRegistry
+     - ValidationError
+
+4. [Validator Classes](#validator-classes)
+   - ValidatorBase
+   - StringValidator
+   - NumberValidator
+   - EmailValidator
+   - PhoneNumberValidator
+   - PasswordValidator
+   - ImageValidator
+   - ImagesValidator
+   - ObjectValidator
+   - ObjectArrayValidator
+
+5. [Validator Options](#validator-options)
+   - ValidationOptionsBase
+   - StringValidationOptions
+   - NumberValidationOptions
+   - EmailValidationOptions
+   - PhoneNumberValidationOptions
+   - PasswordValidationOptions
+   - ImageValidationOptions
+   - ObjectValidationOptions
+
+6. [Validation Matrix](#validation-matrix)
+   - Feature Comparison Table
+   - Key Capabilities
+     - Nullability
+     - Min/Max Length
+     - Min/Max Number
+     - HTML Exclusion
+     - Format/Pattern
+     - Uniqueness/Existence
+     - Nested Validation
+     - Array Validation
+
+7. [Usage Examples](#usage-examples)
+   - Basic String Validation
+   - Email Validation with Options
+   - Number Validation
+   - Password Validation
+   - Image Validation
+   - Nested Object Validation
+   - Array of Objects Validation
+   - Example: Full User Registration Validation
+
+8. [Advanced Usage](#advanced-usage)
+   - Batch Validation
+   - Associative Validation
+   - Error Normalization
+   - Registering Custom Validation Rules
+   - Reusable Validation Instances (DTOs)
+
+9. [Core Classes and Their Roles](#core-classes-and-their-roles)
+   - Validator
+   - ValidationHandler
+   - ValidationRegistry
+   - ValidationError
+
+10. [Extending the Library](#extending-the-library)
+    - Creating Custom Validators
+    - Creating Custom Options Classes
+
+11. [Best Practices & Advanced Patterns](#best-practices--advanced-patterns)
+    - Centralize Validation Logic
+    - Normalize Errors for UI
+    - Custom Validators
+    - Custom Options
+    - Batch Validation
+
+12. [Installation](#installation)
+
+13. [Testing](#testing)
+
+14. [Contributing](#contributing)
+    - Forking & Branching
+    - Committing
+    - Running Tests
+    - Pull Requests
+    - Reporting Issues
+
+15. [Funding & Sponsorship](#funding--sponsorship)
+    - [Support Options](#support-options)
+      - GitHub Sponsors
+      - Buy Me a Coffee
+      - Thanks.dev
+
+16. [License](#license)
+
+17. [Author](#author)
+    - GitHub Profile
+    - Repository
+    - Website
+    - Packagist Link
+
 ## Overview Example
 ### FreightDto
 ```php
@@ -124,128 +260,6 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 ![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
 ![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 ---
-
-# Table of Contents
-
-1. [Features](#features)
-   - [Comprehensive Validation](#comprehensive-validation)
-     - Strings
-     - Numbers
-     - Emails
-     - Phone Numbers
-     - Passwords
-     - Images
-     - Arrays of Images
-     - Nested Objects
-     - Arrays of Objects
-   - [Extensible Architecture](#extensible-architecture)
-   - [Validator Options](#validator-options)
-   - [Nested & Array Validation](#nested--array-validation)
-   - [Error Normalization](#error-normalization)
-   - [Centralized Registry](#centralized-registry)
-   - [Open Source](#open-source)
-
-2. [Architecture Overview](#architecture-overview)
-   - [Core Components](#core-components)
-     - Validator Classes
-     - Validator Options
-     - ValidationHandler
-     - ValidationRegistry
-     - ValidationError
-
-3. [Validator Classes](#validator-classes)
-   - ValidatorBase
-   - StringValidator
-   - NumberValidator
-   - EmailValidator
-   - PhoneNumberValidator
-   - PasswordValidator
-   - ImageValidator
-   - ImagesValidator
-   - ObjectValidator
-   - ObjectArrayValidator
-
-4. [Validator Options](#validator-options)
-   - ValidationOptionsBase
-   - StringValidationOptions
-   - NumberValidationOptions
-   - EmailValidationOptions
-   - PhoneNumberValidationOptions
-   - PasswordValidationOptions
-   - ImageValidationOptions
-   - ObjectValidationOptions
-
-5. [Validation Matrix](#validation-matrix)
-   - Feature Comparison Table
-   - Key Capabilities
-     - Nullability
-     - Min/Max Length
-     - Min/Max Number
-     - HTML Exclusion
-     - Format/Pattern
-     - Uniqueness/Existence
-     - Nested Validation
-     - Array Validation
-
-6. [Usage Examples](#usage-examples)
-   - Basic String Validation
-   - Email Validation with Options
-   - Number Validation
-   - Password Validation
-   - Image Validation
-   - Nested Object Validation
-   - Array of Objects Validation
-   - Example: Full User Registration Validation
-
-7. [Advanced Usage](#advanced-usage)
-   - Batch Validation
-   - Associative Validation
-   - Error Normalization
-   - Registering Custom Validation Rules
-   - Reusable Validation Instances (DTOs)
-
-8. [Core Classes and Their Roles](#core-classes-and-their-roles)
-   - Validator
-   - ValidationHandler
-   - ValidationRegistry
-   - ValidationError
-
-9. [Extending the Library](#extending-the-library)
-    - Creating Custom Validators
-    - Creating Custom Options Classes
-
-10. [Best Practices & Advanced Patterns](#best-practices--advanced-patterns)
-    - Centralize Validation Logic
-    - Normalize Errors for UI
-    - Custom Validators
-    - Custom Options
-    - Batch Validation
-
-11. [Installation](#installation)
-
-12. [Testing](#testing)
-
-13. [Contributing](#contributing)
-    - Forking & Branching
-    - Committing
-    - Running Tests
-    - Pull Requests
-    - Reporting Issues
-
-14. [Funding & Sponsorship](#funding--sponsorship)
-    - [Support Options](#support-options)
-      - GitHub Sponsors
-      - Buy Me a Coffee
-      - Thanks.dev
-
-15. [License](#license)
-
-16. [Author](#author)
-    - GitHub Profile
-    - Repository
-    - Website
-    - Packagist Link
-
 
 ## Features
 - **Comprehensive Validation**: Strings, numbers, emails, phone numbers, passwords, images, arrays of images, nested objects, and arrays of objects.
