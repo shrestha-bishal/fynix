@@ -398,6 +398,10 @@ and wherever needed just call with the dto class instance
         return;
 ```
 
+## Example Validation Snippet
+<img width="390" height="370" alt="Picture1" src="https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9" />
+[Flattened]
+<img width="399" height="284" alt="flattened" src="https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257" />
 
 ## Core Classes and Their Roles
 
