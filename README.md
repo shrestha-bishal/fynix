@@ -121,8 +121,8 @@ Once your validation rules are registered, you can validate DTO instances anywhe
         return;
 ```
 
-![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
-![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
+[Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
+[Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
 
 ---
 
