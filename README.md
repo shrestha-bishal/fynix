@@ -63,7 +63,7 @@
     - [Image Validation](#image-validation)
     - [Nested Object Validation](#nested-object-validation)
     - [Array of Objects Validation](#array-of-objects-validation)
-    - [Full User Registration Validation](#example-full-user-registration-validation)
+    - [Example: Full User Registration Validation](#example-full-user-registration-validation)
 
 8. [Advanced Usage](#advanced-usage)
     - [Batch Validation](#batch-validation)
