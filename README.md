@@ -8,7 +8,7 @@
 - [Validator Classes](#validator-classes)
 - [Validator Options](#validator-options)
 - [Validation Matrix](#validation-matrix)
-- [Usage Examples](#usage-examples)
+- [Usage Examples](#usage-examples) 
 - [Advanced Usage](#advanced-usage)
 - [Extending the Library](#extending-the-library)
 - [Installation](#installation)
@@ -33,6 +33,7 @@ The library is organized into several core components:
 - **ValidationHandler**: Orchestrates validation, supports batch and associative validation, and error normalization.
 - **ValidationRegistry**: Central registry for registering and retrieving validation rules for custom classes.
 - **ValidationError**: Standardized error object for all validators.
+
 
 ## Validator Classes
 
@@ -64,52 +65,52 @@ The library is organized into several core components:
 - **ImageValidationOptions**: Controls number of images, max file size (MB), required status, and generic validation.
 - **ObjectValidationOptions**: Controls whether to validate when the object is null.
 
-## ValidationOptions Classes
+### ValidationOptions Classes
 
 All validators accept an options object to configure their behavior. These options classes allow you to fine-tune validation logic for each field type.
 
-### ValidationOptionsBase
+#### ValidationOptionsBase
 Abstract base class for all options. Common properties:
 - `includeGenericValidation`: Enable/disable generic validation (nullability, length, etc.)
 - `fieldType`: Type of field (string, number, email, etc.)
 - `isRequired`: Whether the field is required.
 - `length`: Array with `min` and `max` constraints.
 
-### StringValidationOptions
+#### StringValidationOptions
 Configure string validation:
 - `length`: Min/max length (default: 2-50)
 - `isRequired`: Field required (default: true)
 - `includeGenericValidation`: Enable generic checks (default: true)
 
-### NumberValidationOptions
+#### NumberValidationOptions
 Configure number validation:
 - `length`: Min/max string length
 - `number`: Min/max numeric value
 - `isRequired`, `includeGenericValidation`
 
-### EmailValidationOptions
+#### EmailValidationOptions
 Configure email validation:
 - `length`: Min/max length
 - `isUsername`: Check for username uniqueness
 - `isRequired`, `includeGenericValidation`
 
-### PhoneNumberValidationOptions
+#### PhoneNumberValidationOptions
 Configure phone number validation:
 - `length`: Min/max length
 - `isRequired`, `includeGenericValidation`
 
-### PasswordValidationOptions
+#### PasswordValidationOptions
 Configure password validation:
 - `length`: Min/max length
 - `isRequired`, `includeGenericValidation`
 
-### ImageValidationOptions
+#### ImageValidationOptions
 Configure image validation:
 - `numImage`: Min/max number of images
 - `maxFileSizeMB`: Maximum file size in MB
 - `isRequired`, `includeGenericValidation`
 
-### ObjectValidationOptions
+#### ObjectValidationOptions
 Configure nested object validation:
 - `validateOnNull`: Whether to validate if the object is null
 
@@ -189,7 +190,7 @@ use PhpValidationCore\Validators\ObjectArrayValidator;
 $objectArrayValidator = new ObjectArrayValidator(FreightItemDto::class, 'items');
 ```
 
-## Example: Full User Registration Validation
+### Example: Full User Registration Validation
 
 Below is a practical example showing how to use the library for a user registration form with multiple fields and nested validation:
 
@@ -281,6 +282,111 @@ ValidationRegistry::register(User::class, function($instance) {
 });
 ```
 
+### Reusable Validation Instances - More modern and Advanced Way
+`php-validation-core` allows you to define reusable validation rules for your **data transfer objects (DTOs)** using the `ValidationRegistry`.
+The `ValidationRuleServiceProvider` demonstrates how to register validation rules for multiple DTOs in a structured and type-safe way.
+
+```php
+<?php
+
+namespace App\Providers;
+
+use App\Dto\Address\AddressDto;
+use App\Dto\DimensionDto;
+use App\Dto\Quote\FreightDto;
+use App\Dto\Quote\ItemDto;
+use App\Dto\Quote\PackageDto;
+use Illuminate\Support\ServiceProvider;
+use PhpValidationCore\ValidationOptions\NumberValidationOptions;
+use PhpValidationCore\ValidationOptions\StringValidationOptions;
+use PhpValidationCore\ValidationRegistry;
+use PhpValidationCore\Validators\NumberValidator;
+use PhpValidationCore\Validators\ObjectArrayValidator;
+use PhpValidationCore\Validators\ObjectValidator;
+use PhpValidationCore\Validators\StringValidator;
+
+class ValidationRuleServiceProvider extends ServiceProvider
+{
+    /**
+     * Register services.
+     */
+    public function register(): void
+    {
+        self::registerDimensionValidation();
+        self::registerItemValidation();
+        self::registerAddressValidation();
+        self::registerShippingValidation();
+        self::registerPackageValidation();
+    }
+
+    /**
+     * Bootstrap services.
+     */
+    public function boot(): void
+    {
+        //
+    }
+
+    private static function registerDimensionValidation() : void {
+        ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
+            return [
+                new NumberValidator('Length', 'lengthCm', new NumberValidationOptions(number: [1, 1800])),
+                new NumberValidator('Width', 'widthCm', new NumberValidationOptions(number: [1, 1800])),
+                new NumberValidator('Height', 'heightCm', new NumberValidationOptions(number: [1, 2000])),
+                new NumberValidator('Weight', 'weightKg', new NumberValidationOptions(number: [1, 1000]))
+            ];
+        });
+    }
+
+    private static function registerItemValidation() : void
+    {
+       ValidationRegistry::register(ItemDto::class, function (ItemDto $dto) {
+            return [
+                new StringValidator('Description', 'description'),
+                new ObjectValidator('dimension', DimensionDto::class),
+           ];
+       });
+    }
+
+    private static function registerAddressValidation() : void 
+    {
+        ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
+            return [
+                new StringValidator('Suburb', 'suburb'),
+                new NumberValidator('Postcode', 'postcode', new NumberValidationOptions(length: [2, 10])),
+                new StringValidator('State', 'state', new StringValidationOptions(length: [2, 6])),
+                new StringValidator('Country', 'countryCode', new StringValidationOptions(length: [2, 4]))
+            ];
+        });
+    }
+
+    private static function registerShippingValidation(): void 
+    {
+        ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
+            return[
+                new ObjectArrayValidator('packages', PackageDto::class),
+                new StringValidator('Customer name', 'customerName', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                new ObjectValidator('pickupAddress', AddressDto::class),
+                new ObjectValidator('deliveryAddress', AddressDto::class),
+            ];
+        });
+    }
+
+    private static function registerPackageValidation(): void {
+        ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
+            return [
+                new StringValidator('Package Type', 'type'),
+                new StringValidator('Description', 'description', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                new ObjectValidator('dimensions', DimensionDto::class),
+                new ObjectArrayValidator('items', ItemDto::class)
+            ];
+        });
+    }
+}
+
+```
+
+
 ## Core Classes and Their Roles
 
 ### Validator
@@ -321,28 +427,6 @@ class CustomValidator extends ValidatorBase {
     }
 }
 ```
-
-## Installation
-
-```bash
-composer require bishal-shrestha/php-validation-core
-```
-
-## Testing
-
-Unit tests are provided using PHPUnit:
-
-```bash
-vendor/bin/phpunit tests/
-```
-
-## Contributing
-
-Contributions are welcome! Please submit issues or pull requests via [GitHub](https://github.com/shrestha-bishal/php-validation-core).
-
-## License
-
-MIT License © Bishal Shrestha
 
 ## Validators: Detailed Documentation
 
@@ -419,6 +503,20 @@ $validator = new ObjectArrayValidator(FreightItemDto::class, 'items');
 - **Custom Options**: Extend `ValidationOptionsBase` to add new configuration parameters for your validators.
 - **Batch Validation**: Validate multiple objects at once with `ValidationHandler::validateMany()` or associative arrays with `validateManyAssoc()`.
 
+## Installation
+
+```bash
+composer require bishalshrestha/php-validation-core
+```
+
+## Testing
+
+Unit tests are provided using PHPUnit:
+
+```bash
+vendor/bin/phpunit tests/
+```
+
 ## Contributing
 
 Contributions are welcome! Please follow these steps:
@@ -462,6 +560,4 @@ This project is licensed under the [MIT License](./LICENSE).
 
 © 2025 Bishal Shrestha, All rights reserved  
 
-[![Packagist](https://img.shields.io/badge/Packagist-View%20Package-orange?logo=packagist&style=flat-square)](https://packagist.org/packages/shrestha-bishal/php-validation-core)  
-
-![banner](https://github.com/user-attachments/assets/0a8ba9c9-90c8-4461-bfb4-e996e55bd29a)
+[![Packagist](https://img.shields.io/badge/Packagist-View%20Package-orange?logo=packagist&style=flat-square)](https://packagist.org/packages/bishalshrestha/php-validation-core)
