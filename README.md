@@ -130,7 +130,7 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 - [Installation](#installation)
 - [Testing](#testing)
 - [Contributing](#contributing)
-- [Support the Project](#funding-&-sponsorship)
+- [Support the Project](#funding--sponsorship)
 - [License](#license)
 - [Author](#author)
 
