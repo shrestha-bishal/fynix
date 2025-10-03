@@ -1,3 +1,4 @@
 .history
 /vendor/
 /.vscode
+/.composer.lock
