@@ -1,8 +1,6 @@
 <?php 
 namespace PhpValidationCore\Validators;
 
-use PhpValidationCore\ValidationOptions\ObjectValidationOptions;
-
 /**
  * Class ObjectValidator
  *
@@ -15,10 +13,6 @@ class ObjectValidator {
      * @param string $registeredClassName The class name whose validator is registered in ValidationRegistry using register().
      */
     public function __construct(
-        public string $className,
         public string $propertyName,
-        public ?ObjectValidationOptions $options = null) 
-        {
-            $this->options ??= new ObjectValidationOptions();
-        }
+        public string $className) {}
 }
