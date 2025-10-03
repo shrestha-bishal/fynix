@@ -81,4 +81,4 @@ ValidationRegistry::register(User::class, function($instance) {
 });
 ```  
 
-For full details, see [UPGRADE.md](https://github.com/your-repo/php-validation-core/blob/v1.0.1/UPGRADE.md)
+For full details, see [UPGRADE.md](https://github.com/shrestha-bishal/php-validation-core/blob/v1.0.1/UPGRADE.md)
