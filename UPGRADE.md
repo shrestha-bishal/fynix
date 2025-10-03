@@ -80,3 +80,5 @@ ValidationRegistry::register(User::class, function($instance) {
     ];
 });
 ```
+
+For a full list of changes, see [CHANGELOG.md](./CHANGELOG.md).
