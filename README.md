@@ -41,7 +41,6 @@
     - PhoneNumberValidationOptions
     - PasswordValidationOptions
     - ImageValidationOptions
-    - ObjectValidationOptions
 
 6. [Validation Matrix](#validation-matrix)
     - Feature Comparison Table
@@ -271,7 +270,7 @@ The library is organized into several core components:
 | PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | PasswordValidationOptions        | `length`, `isRequired`, `includeGenericValidation`                                            |
 | ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
 | ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
-| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | ObjectValidationOptions          | `validateOnNull`                                                                             |
+| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | N/A                              | N/A                                                                                         |
 | ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | N/A                              | N/A     
 
 ### ValidatorBase
@@ -329,14 +328,13 @@ $validator = new ImagesValidator('Gallery', 'galleryImages', $options);
 ### ObjectValidator
 Validates a nested object property using registered rules for its class. Usage:
 ```php
-$options = new ObjectValidationOptions();
-$validator = new ObjectValidator(UserAddress::class, 'address', $options);
+$validator = new ObjectValidator('address', UserAddress::class);
 ```
 
 ### ObjectArrayValidator
 Validates an array of objects, each using registered rules for its class. Usage:
 ```php
-$validator = new ObjectArrayValidator(FreightItemDto::class, 'items');
+$validator = new ObjectArrayValidator('items', FreightItemDto::class);
 ```
 
 ## Validator Options
@@ -416,17 +414,15 @@ $imageValidator = new ImageValidator('Profile Picture', 'profilePic', $imageOpti
 ### Nested Object Validation
 ```php
 use PhpValidationCore\Validators\ObjectValidator;
-use PhpValidationCore\ValidationOptions\ObjectValidationOptions;
 
-$objectOptions = new ObjectValidationOptions();
-$objectValidator = new ObjectValidator(UserAddress::class, 'address', $objectOptions);
+$objectValidator = new ObjectValidator('address', UserAddress::class);
 ```
 
 ### Array of Objects Validation
 ```php
 use PhpValidationCore\Validators\ObjectArrayValidator;
 
-$objectArrayValidator = new ObjectArrayValidator(FreightItemDto::class, 'items');
+$objectArrayValidator = new ObjectArrayValidator('items', FreightItemDto::class);
 ```
 
 ### Example: Full User Registration Validation
@@ -457,7 +453,7 @@ class User {
             new StringValidator('First Name', 'firstName'),
             new EmailValidator('Email', 'email'),
             new PasswordValidator('Password', 'password'),
-            new ObjectValidator(UserAddress::class, 'address'),
+            new ObjectValidator('address', UserAddress::class),
         ];
     }
 }
@@ -504,7 +500,7 @@ $errors = ValidationHandler::validateManyAssoc($instances);
 ### Error Normalization
 ```php
 $errors = ValidationHandler::validate($user);
-$flatErrors = ValidationHandler::normaliseValidationErrors($errors);
+$flatErrors = ValidationHandler::flattenValidationErrors($errors);
 ```
 ![Validation Example](https://github.com/user-attachments/assets/e2454460-9936-4aa9-877a-fbff3d7267a9)
 ![Flattened Validation Example](https://github.com/user-attachments/assets/941e4f32-ad6f-4817-9477-e2e1870a4257)
@@ -647,7 +643,7 @@ The central utility for validating data objects against rules. It provides stati
 Orchestrates the validation process for single objects, arrays, or associative arrays. Supports error normalization (flattening nested error arrays to dot notation for easy form binding). Example:
 ```php
 $errors = ValidationHandler::validate($user);
-$flatErrors = ValidationHandler::normaliseValidationErrors($errors);
+$flatErrors = ValidationHandler::flattenValidationErrors($errors);
 ```
 
 ### ValidationRegistry
@@ -680,7 +676,7 @@ class CustomValidator extends ValidatorBase {
 
 ## Best Practices & Advanced Patterns
 - **Centralize Validation Logic**: Use `ValidationRegistry` to keep validation rules organized and reusable for each class.
-- **Normalize Errors for UI**: Use `ValidationHandler::normaliseValidationErrors()` to flatten errors for form binding and display.
+- **Normalize Errors for UI**: Use `ValidationHandler::flattenValidationErrors()` to flatten errors for form binding and display.
 - **Custom Validators**: Extend `ValidatorBase` for domain-specific validation needs.
 - **Custom Options**: Extend `ValidationOptionsBase` to add new configuration parameters for your validators.
 - **Batch Validation**: Validate multiple objects at once with `ValidationHandler::validateMany()` or associative arrays with `validateManyAssoc()`.
