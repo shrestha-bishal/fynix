@@ -1,8 +1,8 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
-use PhpValidationCore\ValidationError;
-use PhpValidationCore\ValidationOptions\PasswordValidationOptions;
+use Fynix\ValidationError;
+use Fynix\ValidationOptions\PasswordValidationOptions;
 
 class PasswordValidator extends ValidatorBase 
 {

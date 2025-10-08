@@ -1,5 +1,5 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
 /**
  * Class ObjectArrayValidator

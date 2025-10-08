@@ -1,5 +1,5 @@
 <?php 
-namespace PhpValidationCore;
+namespace Fynix;
 
 use InvalidArgumentException;
 
