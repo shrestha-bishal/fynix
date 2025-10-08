@@ -1,6 +1,6 @@
-# PHP Validation Core
+# Fynix
 
-**php-validation-core** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
+**Fynixe** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
 
 # Table of Contents
 
