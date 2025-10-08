@@ -1,5 +1,35 @@
 # Upgrade guide — php-validation-core
 
+## Upgrade: 1.0.1 → 1.0.2
+
+Summary
+- v1.0.2 is a documentation and repository-metadata release only. There are no library code, API, or runtime changes between v1.0.1 and v1.0.2.
+
+Files added/updated in v1.0.2
+- .github/CODEOWNERS
+- .github/ISSUE_TEMPLATE/bug_report.md
+- .github/ISSUE_TEMPLATE/feature_request.md
+- CODE_OF_CONDUCT.md
+- CONTRIBUTING.md
+- SECURITY.md
+
+What you need to do
+- No code changes or migrations are required.
+- Pull the release as usual and update any local release automation if it relies on repository metadata file paths.
+
+Recommended quick checks after upgrading
+1. Confirm issue templates appear when creating issues on GitHub.
+2. Verify CODEOWNERS behaves as expected (reviewers/branch protection) if you rely on it.
+3. Confirm the security contact and disclosure process in SECURITY.md are correct.
+4. If you have CI/bots that parse repo metadata, update them if they expect different files or locations.
+
+Notes
+- Keep the v1.0.1 migration steps in this file for users upgrading from pre-1.0.1 versions. Only follow those steps when upgrading from versions older than v1.0.1.
+- Suggested GitHub release note (one line): "v1.0.2 — Documentation & repository metadata only: added CODEOWNERS, issue templates, CONTRIBUTING, SECURITY, and CODE_OF_CONDUCT. No API or runtime changes."
+
+---
+
+## Upgrade: 1.0.0 → 1.0.1
 This file lists important breaking changes and migration steps for upgrading to v1.0.1.
 
 Date: 2025-10-03
