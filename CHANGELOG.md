@@ -4,6 +4,26 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).  
 
+## [1.0.2] - 2025-10-08
+### Added
+- Repository and community metadata to improve contributor experience and security contactability:
+  - .github/CODEOWNERS
+  - .github/ISSUE_TEMPLATE/bug_report.md
+  - .github/ISSUE_TEMPLATE/feature_request.md
+  - CODE_OF_CONDUCT.md
+  - CONTRIBUTING.md
+  - SECURITY.md
+
+### Changed
+- No runtime or public API changes — this release contains repository housekeeping and documentation only.
+
+### Notes
+- Non-breaking patch release. No code changes required when upgrading from 1.0.1 → 1.0.2.
+- Verify repository settings (issue templates and CODEOWNERS) and security contact info after publishing.
+
+---
+
+
 ## [1.0.1] - 2025-10-03  
 
 **Note:** This release increments the patch version but includes breaking changes.  
