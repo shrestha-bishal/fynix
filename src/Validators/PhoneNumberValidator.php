@@ -1,8 +1,8 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
-use PhpValidationCore\ValidationError;
-use PhpValidationCore\ValidationOptions\PhoneNumberValidationOptions;
+use Fynix\ValidationError;
+use Fynix\ValidationOptions\PhoneNumberValidationOptions;
 
 class PhoneNumberValidator extends ValidatorBase 
 {

@@ -1,6 +1,6 @@
-# PHP Validation Core
+# Fynix - The Modern PHP Validation Engine
 
-**php-validation-core** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
+**fynix** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
 
 # Table of Contents
 
@@ -368,8 +368,8 @@ All validators accept an options object to configure their behavior. These optio
 ## Basic Usage Examples
 ### String Validation
 ```php
-use PhpValidationCore\Validators\StringValidator;
-use PhpValidationCore\ValidationOptions\StringValidationOptions;
+use Fynix\Validators\StringValidator;
+use Fynix\ValidationOptions\StringValidationOptions;
 
 $options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
 $stringValidator = new StringValidator('First Name', 'firstName', $options);
@@ -377,8 +377,8 @@ $stringValidator = new StringValidator('First Name', 'firstName', $options);
 
 ### Email Validation
 ```php
-use PhpValidationCore\Validators\EmailValidator;
-use PhpValidationCore\ValidationOptions\EmailValidationOptions;
+use Fynix\Validators\EmailValidator;
+use Fynix\ValidationOptions\EmailValidationOptions;
 
 $emailOptions = new EmailValidationOptions(['min' => 6, 'max' => 100], true, true, true);
 $emailValidator = new EmailValidator('Email', 'email', $emailOptions);
@@ -386,8 +386,8 @@ $emailValidator = new EmailValidator('Email', 'email', $emailOptions);
 
 ### Number Validation
 ```php
-use PhpValidationCore\Validators\NumberValidator;
-use PhpValidationCore\ValidationOptions\NumberValidationOptions;
+use Fynix\Validators\NumberValidator;
+use Fynix\ValidationOptions\NumberValidationOptions;
 
 $numberOptions = new NumberValidationOptions(['min' => 1, 'max' => 30], true, true, ['min' => 18, 'max' => 99]);
 $numberValidator = new NumberValidator('Age', 'age', $numberOptions);
@@ -395,8 +395,8 @@ $numberValidator = new NumberValidator('Age', 'age', $numberOptions);
 
 ### Password Validation
 ```php
-use PhpValidationCore\Validators\PasswordValidator;
-use PhpValidationCore\ValidationOptions\PasswordValidationOptions;
+use Fynix\Validators\PasswordValidator;
+use Fynix\ValidationOptions\PasswordValidationOptions;
 
 $passwordOptions = new PasswordValidationOptions(['min' => 8, 'max' => 30], true);
 $passwordValidator = new PasswordValidator('Password', 'password', $passwordOptions);
@@ -404,8 +404,8 @@ $passwordValidator = new PasswordValidator('Password', 'password', $passwordOpti
 
 ### Image Validation
 ```php
-use PhpValidationCore\Validators\ImageValidator;
-use PhpValidationCore\ValidationOptions\ImageValidationOptions;
+use Fynix\Validators\ImageValidator;
+use Fynix\ValidationOptions\ImageValidationOptions;
 
 $imageOptions = new ImageValidationOptions(['min' => 1, 'max' => 1], true, false, 5);
 $imageValidator = new ImageValidator('Profile Picture', 'profilePic', $imageOptions);
@@ -413,14 +413,14 @@ $imageValidator = new ImageValidator('Profile Picture', 'profilePic', $imageOpti
 
 ### Nested Object Validation
 ```php
-use PhpValidationCore\Validators\ObjectValidator;
+use Fynix\Validators\ObjectValidator;
 
 $objectValidator = new ObjectValidator('address', UserAddress::class);
 ```
 
 ### Array of Objects Validation
 ```php
-use PhpValidationCore\Validators\ObjectArrayValidator;
+use Fynix\Validators\ObjectArrayValidator;
 
 $objectArrayValidator = new ObjectArrayValidator('items', FreightItemDto::class);
 ```
@@ -429,12 +429,12 @@ $objectArrayValidator = new ObjectArrayValidator('items', FreightItemDto::class)
 Below is a practical example showing how to use the library for a user registration form with multiple fields and nested validation:
 
 ```php
-use PhpValidationCore\Validators\StringValidator;
-use PhpValidationCore\Validators\EmailValidator;
-use PhpValidationCore\Validators\PasswordValidator;
-use PhpValidationCore\Validators\ObjectValidator;
-use PhpValidationCore\ValidationRegistry;
-use PhpValidationCore\ValidationHandler;
+use Fynix\Validators\StringValidator;
+use Fynix\Validators\EmailValidator;
+use Fynix\Validators\PasswordValidator;
+use Fynix\Validators\ObjectValidator;
+use Fynix\ValidationRegistry;
+use Fynix\ValidationHandler;
 
 class UserAddress {
     public ?string $street = null;
@@ -486,7 +486,7 @@ if (!empty($errors)) {
 ## Advanced Usage
 ### Batch Validation
 ```php
-use PhpValidationCore\ValidationHandler;
+use Fynix\ValidationHandler;
 
 $errors = ValidationHandler::validateMany($user, $profile, $settings);
 ```
@@ -507,7 +507,7 @@ $flatErrors = ValidationHandler::flattenValidationErrors($errors);
 
 ### Registering Custom Validation Rules
 ```php
-use PhpValidationCore\ValidationRegistry;
+use Fynix\ValidationRegistry;
 
 ValidationRegistry::register(User::class, function($instance) {
     return [
@@ -519,7 +519,7 @@ ValidationRegistry::register(User::class, function($instance) {
 ```
 
 ### Reusable Validation Instances - More modern way
-`php-validation-core` allows you to define reusable validation rules for your **data transfer objects (DTOs)** using the `ValidationRegistry`.
+`fynix` allows you to define reusable validation rules for your **data transfer objects (DTOs)** using the `ValidationRegistry`.
 The `ValidationRuleServiceProvider` demonstrates how to register validation rules for multiple DTOs in a structured and type-safe way.
 
 ```php
@@ -533,13 +533,13 @@ use App\Dto\Quote\FreightDto;
 use App\Dto\Quote\ItemDto;
 use App\Dto\Quote\PackageDto;
 use Illuminate\Support\ServiceProvider;
-use PhpValidationCore\ValidationOptions\NumberValidationOptions;
-use PhpValidationCore\ValidationOptions\StringValidationOptions;
-use PhpValidationCore\ValidationRegistry;
-use PhpValidationCore\Validators\NumberValidator;
-use PhpValidationCore\Validators\ObjectArrayValidator;
-use PhpValidationCore\Validators\ObjectValidator;
-use PhpValidationCore\Validators\StringValidator;
+use Fynix\ValidationOptions\NumberValidationOptions;
+use Fynix\ValidationOptions\StringValidationOptions;
+use Fynix\ValidationRegistry;
+use Fynix\Validators\NumberValidator;
+use Fynix\Validators\ObjectArrayValidator;
+use Fynix\Validators\ObjectValidator;
+use Fynix\Validators\StringValidator;
 
 class ValidationRuleServiceProvider extends ServiceProvider
 {
@@ -684,7 +684,7 @@ class CustomValidator extends ValidatorBase {
 ## Installation
 
 ```bash
-composer require bishalshrestha/php-validation-core
+composer require bishalshrestha/fynix
 ```
 --- 
 
@@ -710,7 +710,7 @@ For bug reports or feature requests, please open an issue on GitHub.
 
 ## Funding & Sponsorship
 
-`php-validation-core` is an open-source project maintained with care to deliver a reliable and extensible validation engine for PHP developers.  
+`fynix` is an open-source project maintained with care to deliver a reliable and extensible validation engine for PHP developers.  
 If you or your organization find this project valuable, please consider supporting its development. Your sponsorship helps sustain long-term maintenance, improve features and documentation, and keep the library freely available to the community.  
 
 As a token of appreciation, sponsors may have their logo and link featured in the project README and documentation site.  
@@ -734,9 +734,9 @@ This project is licensed under the [MIT License](./LICENSE).
 **Bishal Shrestha**  
 
 [![GitHub](https://img.shields.io/badge/GitHub-Profile-black?logo=github)](https://github.com/shrestha-bishal)  
-[![Repo](https://img.shields.io/badge/Repository-GitHub-black?logo=github)](https://github.com/shrestha-bishal/php-validation-core)  
-[Website](https://php-validation-core.netlify.app) *(coming soon)*  
+[![Repo](https://img.shields.io/badge/Repository-GitHub-black?logo=github)](https://github.com/shrestha-bishal/fynix)  
+[Website](https://fynixphp.netlify.app) *(coming soon)*  
 
 © 2025 Bishal Shrestha, All rights reserved  
 
-[![Packagist](https://img.shields.io/badge/Packagist-View%20Package-orange?logo=packagist&style=flat-square)](https://packagist.org/packages/bishalshrestha/php-validation-core)
+[![Packagist](https://img.shields.io/badge/Packagist-View%20Package-orange?logo=packagist&style=flat-square)](https://packagist.org/packages/bishalshrestha/fynix)

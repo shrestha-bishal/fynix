@@ -1,5 +1,5 @@
 <?php 
-namespace PhpValidationCore\ValidationOptions;
+namespace Fynix\ValidationOptions;
 
 class EmailValidationOptions extends ValidationOptionsBase {
     public function __construct(

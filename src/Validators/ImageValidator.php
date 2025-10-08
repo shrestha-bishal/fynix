@@ -1,8 +1,8 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
-use PhpValidationCore\ValidationError;
-use PhpValidationCore\ValidationOptions\ImageValidationOptions;
+use Fynix\ValidationError;
+use Fynix\ValidationOptions\ImageValidationOptions;
 
 class ImageValidator extends ValidatorBase 
 {

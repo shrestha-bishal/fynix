@@ -1,8 +1,8 @@
 <?php
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
-use PhpValidationCore\ValidationError;
-use PhpValidationCore\ValidationOptions\StringValidationOptions;
+use Fynix\ValidationError;
+use Fynix\ValidationOptions\StringValidationOptions;
 
 class StringValidator extends ValidatorBase {
     /**

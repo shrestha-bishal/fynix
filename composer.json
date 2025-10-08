@@ -1,5 +1,5 @@
 {
-    "name": "bishalshrestha/php-validation-core",
+    "name": "bishalshrestha/fynix",
     "description": "A modern, extensible PHP library for validating primitive data types, files, nested objects, and arrays of objects with reusable and centralized validation rules.",
     "type": "library",
     "license": "MIT",
@@ -10,11 +10,11 @@
             "homepage": "https://github.com/shrestha-bishal"
         }
     ],
-    "homepage": "https://github.com/shrestha-bishal/php-validation-core",
+    "homepage": "https://github.com/shrestha-bishal/fynix",
     "support": {
-        "issues": "https://github.com/shrestha-bishal/php-validation-core/issues",
-        "source": "https://github.com/shrestha-bishal/php-validation-core",
-        "docs": "https://github.com/shrestha-bishal/php-validation-core#readme"
+        "issues": "https://github.com/shrestha-bishal/fynix/issues",
+        "source": "https://github.com/shrestha-bishal/fynix",
+        "docs": "https://github.com/shrestha-bishal/fynix#readme"
     },
     "require": {
         "php": ">=8.0"
@@ -50,7 +50,10 @@
         ]
     },
     "keywords": [
+        "fynix",
         "php",
+        "php validation core",
+        "php validation engine",
         "php library",
         "php package",
         "composer",
