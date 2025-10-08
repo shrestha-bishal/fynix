@@ -21,6 +21,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Non-breaking patch release. No code changes required when upgrading from 1.0.1 → 1.0.2.
 - Verify repository settings (issue templates and CODEOWNERS) and security contact info after publishing.
 
+For full details, see [UPGRADE.md](https://github.com/shrestha-bishal/php-validation-core/blob/v1.0.2/UPGRADE.md)
 ---
 
 
