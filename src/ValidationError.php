@@ -1,7 +1,7 @@
 <?php
-namespace PhpValidationCore;
+namespace Fynix;
 
-use PhpValidationCore\Validators\ValidatorBase;
+use Fynix\Validators\ValidatorBase;
 
 class ValidationError {
     public ValidatorBase $rule;

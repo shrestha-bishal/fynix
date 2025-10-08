@@ -1,8 +1,8 @@
 <?php
-namespace PhpValidationCore\Tests;
+namespace Fynix\Tests;
 
 use PHPUnit\Framework\TestCase;
-use PhpValidationCore\Examples\User;
+use Fynix\Examples\User;
 
 final class UserTest extends TestCase {
     private User $user;

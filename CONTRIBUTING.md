@@ -1,6 +1,6 @@
 # Contributing Guide
 
-Thank you for your interest in contributing to **php-validation-core**.  
+Thank you for your interest in contributing to **fynix**.  
 This project values high-quality, reliable PHP code and thoughtful collaboration.  
 This guide outlines the standards and steps for reporting issues, contributing code, or improving documentation.
 
@@ -11,8 +11,8 @@ This guide outlines the standards and steps for reporting issues, contributing c
 1. **Fork** the repository on GitHub.  
 2. **Clone** your fork:
    ```bash
-   git clone https://github.com/shrestha-bishal/php-validation-core.git
-   cd php-validation-core
+   git clone https://github.com/shrestha-bishal/fynix.git
+   cd fynix
    ```
 3. **Install dependencies**:
    ```bash
@@ -80,7 +80,7 @@ Ensure tests are:
 
 ## Reporting Bugs or Issues
 
-Please use the [GitHub Issues](https://github.com/shrestha-bishal/php-validation-core/issues) page and include:
+Please use the [GitHub Issues](https://github.com/shrestha-bishal/fynix/issues) page and include:
 
 - A clear title and summary  
 - Steps to reproduce the issue  
@@ -105,5 +105,5 @@ By contributing, you agree that your contributions will be licensed under the [M
 
 ---
 
-Thank you for contributing to **php-validation-core**.  
+Thank you for contributing to **fynix**.  
 Your efforts help make this library more robust, reliable, and developer-friendly.

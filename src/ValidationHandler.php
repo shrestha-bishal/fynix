@@ -1,8 +1,8 @@
 <?php
-namespace PhpValidationCore;
+namespace Fynix;
 
-use PhpValidationCore\Validators\ObjectArrayValidator;
-use PhpValidationCore\Validators\ObjectValidator;
+use Fynix\Validators\ObjectArrayValidator;
+use Fynix\Validators\ObjectValidator;
 
 /**
  * Class ValidationHandler

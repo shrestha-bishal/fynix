@@ -1,8 +1,8 @@
 <?php 
-namespace PhpValidationCore\Validators;
+namespace Fynix\Validators;
 
-use PhpValidationCore\ValidationError;
-use PhpValidationCore\ValidationOptions\NumberValidationOptions;
+use Fynix\ValidationError;
+use Fynix\ValidationOptions\NumberValidationOptions;
 
 class NumberValidator extends ValidatorBase {
     private ?int $_minNumber;

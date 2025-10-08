@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-The following table outlines which versions of `php-validation-core` are currently supported with security updates.
+The following table outlines which versions of `fynix` are currently supported with security updates.
 
 | Version   | Supported          |
 |-----------|--------------------|
@@ -18,7 +18,7 @@ We take security seriously. If you discover a vulnerability in this package, ple
 
 ### How to Report
 
-- GitHub: [Open a private security advisory](https://github.com/shrestha-bishal/php-validation-core/security/advisories)
+- GitHub: [Open a private security advisory](https://github.com/shrestha-bishal/fynix/security/advisories)
 
 ### What to Expect
 
@@ -33,4 +33,4 @@ Please **do not** disclose security issues publicly until a patch has been relea
 
 ---
 
-Thank you for helping keep `php-validation-core` safe for everyone!
+Thank you for helping keep `fynix` safe for everyone!
