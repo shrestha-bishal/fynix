@@ -2,7 +2,8 @@
 
 **fynix** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
 
-<img width="1024" height="1024" alt="logo" src="https://github.com/user-attachments/assets/1b651ceb-3ecc-4173-a0e1-fee8f5372dd5" />
+<img width="1024" height="1024" alt="logo" src="https://github.com/user-attachments/assets/d498f52c-52db-4543-aafd-68318bc7df34" />
+
 
 # Table of Contents
 
