@@ -7,7 +7,7 @@ updates:
     open-pull-requests-limit: 5
     rebase-strategy: "auto"
     ignore:
-      - dependency-type: "devDependencies"
+      - dependency-name: "phpunit/phpunit"
 
   - package-ecosystem: "github-actions"
     directory: "/"
