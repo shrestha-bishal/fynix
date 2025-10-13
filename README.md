@@ -1,12 +1,17 @@
 # Fynix - The Modern PHP Validation Engine <img width="30" height="30" alt="logo" src="https://github.com/user-attachments/assets/e231643d-88f5-428b-a34a-43a906d2cb9c" />
 
+[![Packagist Version](https://img.shields.io/packagist/v/bishalshrestha/fynix.svg?style=flat-square)](https://packagist.org/packages/bishalshrestha/fynix)
+[![Downloads](https://img.shields.io/packagist/dt/bishalshrestha/fynix.svg?style=flat-square)](https://packagist.org/packages/bishalshrestha/fynix)
+![CI](https://github.com/shrestha-bishal/fynix/actions/workflows/ci.yml/badge.svg)
+![PHP Version](https://img.shields.io/packagist/php-v/bishalshrestha/fynix.svg?style=flat-square)
+![License](https://img.shields.io/packagist/l/bishalshrestha/fynix.svg?style=flat-square)
+
 **fynix** is a modern, extensible PHP library for validating primitive data types, files, complex objects, and nested objects, including arrays of objects. Designed for high performance and flexibility, it enables developers to implement robust validation logic across modern PHP applications and frameworks.
 
 <img width="1024" height="1024" alt="logo" src="https://github.com/user-attachments/assets/d498f52c-52db-4543-aafd-68318bc7df34" />
 
 
 # Table of Contents
-
 
 1. [Overview Example](#overview-example)
     - [FreightDto](#freightdto)
