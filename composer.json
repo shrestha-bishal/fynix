@@ -10,7 +10,7 @@
             "homepage": "https://github.com/shrestha-bishal"
         }
     ],
-    "homepage": "https://github.com/shrestha-bishal/fynix",
+    "homepage": "https://fynixphp.netlify.app",
     "support": {
         "issues": "https://github.com/shrestha-bishal/fynix/issues",
         "source": "https://github.com/shrestha-bishal/fynix",
@@ -51,6 +51,7 @@
     },
     "keywords": [
         "fynix",
+        "fynix php",
         "php",
         "php validation core",
         "php validation engine",
