@@ -48,6 +48,21 @@
             }
         ]
     },
+    "archive": {
+        "exclude": [
+            "/.github",
+            "/.vscode",
+            "/tests",
+            "/vendor",
+            "/.gitattributes",
+            "/.gitignore",
+            "/CHANGELOG.md",
+            "/CODE_OF_CONDUCT.md",
+            "/CONTRIBUTING.md",
+            "/SECURITY.md",
+            "/UPGRADE.md"
+        ]
+    },
     "keywords": [
         "fynix",
         "fynix php",
