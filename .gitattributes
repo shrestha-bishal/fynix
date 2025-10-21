@@ -1,8 +1,8 @@
-/.github export-ignore
-/.history export-ignore
-/.vscode export-ignore
-/tests export-ignore
-/vendor export-ignore
+/.github/* export-ignore
+/.history/* export-ignore
+/.vscode/* export-ignore
+/tests/* export-ignore
+/vendor/* export-ignore
 /.gitattributes export-ignore
 /.gitignore export-ignore
 /CHANGELOG.md export-ignore
