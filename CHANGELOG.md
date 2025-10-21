@@ -4,6 +4,24 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.0.2] - 2025-10-21
+
+### Added
+- Added `archive` configuration in `composer.json` to exclude development files from distribution
+- Added exclusion rules for development-related files and directories:
+  - `.github/`, `.vscode/`, `tests/`, `vendor/`
+  - Documentation files: `CHANGELOG.md`, `CODE_OF_CONDUCT.md`, `CONTRIBUTING.md`, `SECURITY.md`, `UPGRADE.md`
+  - Git files: `.gitattributes`, `.gitignore`
+
+### Changed
+- No changes in this release.
+
+### Fixed
+- No bug fixes in this release.
+
+### Security
+- No security fixes in this release.
+
 ## [1.0.1] - 2025-10-13
 
 ### Added
