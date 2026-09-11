@@ -7,6 +7,17 @@ use BadMethodCallException;
 
 /**
  * @method Validators\StringValidator string(string $field)
+ * @method Validators\BooleanValidator boolean(string $field)
+ * @method Validators\DateTimeValidator dateTime(string $field)
+ * @method Validators\ArrayValidator arrayOf(string $field)
+ * @method Validators\UrlValidator url(string $field)
+ * @method Validators\UuidValidator uuid(string $field)
+ * @method Validators\IntegerValidator integer(string $field)
+ * @method Validators\DecimalValidator decimal(string $field)
+ * @method Validators\EnumValidator enum(string $field, string $enumClass)
+ * @method Validators\FileValidator file(string $field)
+ * @method Validators\IpAddressValidator ipAddress(string $field)
+ * @method Validators\RegexValidator regex(string $field, string $pattern)
  * @method Validators\NumberValidator number(string $field)
  * @method Validators\EmailValidator email(string $field)
  * @method Validators\PhoneNumberValidator phoneNumber(string $field)

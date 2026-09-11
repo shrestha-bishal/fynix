@@ -17,6 +17,61 @@ final class ScopedRule
         return Rule::string($this->property($field));
     }
 
+    public function boolean(string $field): Validators\BooleanValidator
+    {
+        return Rule::boolean($this->property($field));
+    }
+
+    public function dateTime(string $field): Validators\DateTimeValidator
+    {
+        return Rule::dateTime($this->property($field));
+    }
+
+    public function arrayOf(string $field): Validators\ArrayValidator
+    {
+        return Rule::arrayOf($this->property($field));
+    }
+
+    public function url(string $field): Validators\UrlValidator
+    {
+        return Rule::url($this->property($field));
+    }
+
+    public function uuid(string $field): Validators\UuidValidator
+    {
+        return Rule::uuid($this->property($field));
+    }
+
+    public function integer(string $field): Validators\IntegerValidator
+    {
+        return Rule::integer($this->property($field));
+    }
+
+    public function decimal(string $field): Validators\DecimalValidator
+    {
+        return Rule::decimal($this->property($field));
+    }
+
+    public function enum(string $field, string $enumClass): Validators\EnumValidator
+    {
+        return Rule::enum($this->property($field), $enumClass);
+    }
+
+    public function file(string $field): Validators\FileValidator
+    {
+        return Rule::file($this->property($field));
+    }
+
+    public function ipAddress(string $field): Validators\IpAddressValidator
+    {
+        return Rule::ipAddress($this->property($field));
+    }
+
+    public function regex(string $field, string $pattern): Validators\RegexValidator
+    {
+        return Rule::regex($this->property($field), $pattern);
+    }
+
     public function number(string $field): Validators\NumberValidator
     {
         return Rule::number($this->property($field));

@@ -64,6 +64,22 @@ final class ValidationTest extends TestCase
         }
     }
 
+    public function testAdditionalValidatorsAreAvailableAndValidateValues(): void
+    {
+        self::assertNull(Rule::boolean('enabled')->validate(true));
+        self::assertNotNull(Rule::boolean('enabled')->validate('true'));
+        self::assertNull(Rule::dateTime('createdAt')->validate('2026-09-11'));
+        self::assertNull(Rule::arrayOf('tags')->min(1)->validate(['php']));
+        self::assertNull(Rule::url('website')->validate('https://example.com'));
+        self::assertNull(Rule::uuid('id')->validate('550e8400-e29b-41d4-a716-446655440000'));
+        self::assertNull(Rule::integer('count')->min(1)->validate(2));
+        self::assertNull(Rule::decimal('price')->max(10.5)->validate(9.5));
+        self::assertNull(Rule::enum('state', Status::class)->validate(Status::Active));
+        self::assertNull(Rule::enum('state', Status::class)->validate('active'));
+        self::assertNull(Rule::ipAddress('ip')->validate('127.0.0.1'));
+        self::assertNull(Rule::regex('code', '/^[A-Z]+$/')->validate('ABC'));
+    }
+
     public function testLabelDerivationSupportsSnakeCaseAcronymsAndEmptyOverride(): void
     {
         self::assertSame('First Name', Rule::string('first_name')->name());
@@ -269,4 +285,10 @@ final class Order
 
     /** @var list<Item> */
     public array $items = [];
+}
+
+enum Status: string
+{
+    case Active = 'active';
+    case Inactive = 'inactive';
 }
