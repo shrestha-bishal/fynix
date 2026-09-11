@@ -5,6 +5,7 @@ namespace Fynix\Tests;
 use Fynix\ValidationHandler;
 use Fynix\ValidationError;
 use Fynix\ValidationRegistry;
+use Fynix\Rules;
 use Fynix\Validators\EmailValidator;
 use Fynix\Validators\ObjectArrayValidator;
 use Fynix\Validators\ObjectValidator;
@@ -46,6 +47,21 @@ final class ValidationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         nameof(Node::class, 'missing');
+    }
+
+    public function testFluentRulesBuilderCreatesRegistryRules(): void
+    {
+        $resolver = Rules::for(Node::class)
+            ->string(nameof(Node::class, 'name'))
+            ->min(2)
+            ->max(20);
+
+        ValidationRegistry::register(Node::class, $resolver);
+
+        $node = new Node();
+        $node->name = 'Root';
+
+        self::assertSame([], ValidationHandler::validate($node));
     }
 
     public function testNumberMinAndMaxAreNumericConstraints(): void
