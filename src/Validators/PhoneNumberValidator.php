@@ -47,6 +47,6 @@ class PhoneNumberValidator extends LengthValidatorBase
      */
     private static function getSanitisedValue(string $fieldValue) : string
     {
-        return trim(preg_replace('/[^0-9]/', '', $fieldValue)); 
+        return trim((string) preg_replace('/[^0-9]/', '', $fieldValue)); 
     }
 }

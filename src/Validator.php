@@ -9,7 +9,6 @@ use Fynix\Validators\ValidatorBase;
  * This class serves as a core utility for validating various data types and input fields. 
  * @package Fynix
  * @category Validation
- * @version 1.0.0
  * @author Bishal Shrestha <bishal.shrestha@outlook.com.au>
  * @license MIT License
  * @copyright Copyright (c) 2025, Bishal Shrestha. All rights reserved.
@@ -59,6 +58,10 @@ class Validator
           {
               foreach ($rule as $index => $nestedRules) {
                 if (!array_key_exists($index, $propertyValue)) {
+                  if (!isset($errors[$key]) || !is_array($errors[$key])) {
+                    $errors[$key] = [];
+                  }
+
                   $errors[$key][$index] = self::formatError(
                       "$key.$index",
                       'Missing object item.',
@@ -71,6 +74,10 @@ class Validator
                 $nestedItem = $propertyValue[$index];
 
                 if (!is_object($nestedItem)) {
+                  if (!isset($errors[$key]) || !is_array($errors[$key])) {
+                    $errors[$key] = [];
+                  }
+
                   $errors[$key][$index] = self::formatError(
                     "$key.$index",
                     'Invalid item — expected object.',
@@ -82,6 +89,10 @@ class Validator
 
                 $nestedErrors = self::getValidationErrors($nestedRules, $nestedItem, $flattenToString, $visited);
                 if (!empty($nestedErrors)) {
+                    if (!isset($errors[$key]) || !is_array($errors[$key])) {
+                      $errors[$key] = [];
+                    }
+
                     $errors[$key][$index] = $nestedErrors;
                 }
               }
@@ -108,19 +119,19 @@ class Validator
 
           continue;
         }
-        
-        if($rule instanceof ValidatorBase) {
-          $field = $rule->propertyName();
-          $fieldValue = isset($data->{$field}) ? $data->{$field} : null;
-          $validations = $rule->validateFieldAll($fieldValue);
 
-          if(!empty($validations)) {
-            if ($flattenToString) {
-                $messages = array_map(static fn(ValidationError $error): string => $error->message, $validations);
-                $errors[$field] = count($messages) === 1 ? $messages[0] : $messages;
-            } else {
-                $errors[$field] = count($validations) === 1 ? $validations[0] : $validations;
-            }
+        /** @var ValidatorBase $rule */
+        $rule = $rule;
+        $field = $rule->propertyName();
+        $fieldValue = isset($data->{$field}) ? $data->{$field} : null;
+        $validations = $rule->validateFieldAll($fieldValue);
+
+        if(!empty($validations)) {
+          if ($flattenToString) {
+              $messages = array_map(static fn(ValidationError $error): string => $error->message, $validations);
+              $errors[$field] = count($messages) === 1 ? $messages[0] : $messages;
+          } else {
+              $errors[$field] = count($validations) === 1 ? $validations[0] : $validations;
           }
         }
       }

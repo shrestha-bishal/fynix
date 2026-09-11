@@ -92,6 +92,7 @@ abstract class ValidatorBase
     /** @return list<ValidationError> */
     public function validateFieldAll(mixed $fieldValue): array
     {
+        /** @var list<ValidationError> $errors */
         $errors = [];
 
         if($this->includeGenericValidation) 
@@ -106,11 +107,11 @@ abstract class ValidatorBase
                 return [];
             }
 
-            $errors = array_merge($errors, $this->validateHTML($fieldValue));
-            $errors = array_merge($errors, $this->validateLength($fieldValue));
+            $errors = [...$errors, ...$this->validateHTML($fieldValue)];
+            $errors = [...$errors, ...$this->validateLength($fieldValue)];
         }
 
-        $errors = array_merge($errors, $this->validateAll($fieldValue));
+        $errors = [...$errors, ...$this->validateAll($fieldValue)];
 
         return $errors;
     }
@@ -131,15 +132,14 @@ abstract class ValidatorBase
 
     /**
      * Validates if the field value exceeds the maximum length.
-     * @param string $fieldValue The value of the field to validate.
-    * @return ValidationError[] All length errors for the value.
+     * @return list<ValidationError> All length errors for the value.
      */
-    private function validateLength($fieldValue) : array
+    private function validateLength(mixed $fieldValue) : array
     {
         if($this->minLength == null || $this->maxLength == null)
             return [];
-    
-        if (!is_scalar($fieldValue))
+
+        if (!is_string($fieldValue) && !is_int($fieldValue) && !is_float($fieldValue))
             return [];
 
         $stringLength = function_exists('mb_strlen')
@@ -157,12 +157,11 @@ abstract class ValidatorBase
 
     /**
      * Validates if the field value is a valid with no HTML tags.
-     * @param string $fieldValue The value of the field to validate.
-    * @return ValidationError[] All HTML errors for the value.
+     * @return list<ValidationError> All HTML errors for the value.
      */
-    private function validateHTML($fieldValue) : array
+    private function validateHTML(mixed $fieldValue) : array
     {
-        if(is_string($fieldValue) && preg_match('/<[^>]*>/', $fieldValue))
+        if(is_string($fieldValue) && preg_match('/<[^>]*>/', $fieldValue) === 1)
             return [new ValidationError($this, "$this->name cannot contain HTML tags.", 'html.forbidden')];
         
         return [];

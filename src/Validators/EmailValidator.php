@@ -42,13 +42,13 @@ class EmailValidator extends LengthValidatorBase
 
     private static function validateDNS(string $fieldValue) : bool 
     {
-        $isValid = false;
-        $domain = substr(strrchr($fieldValue, '@'), 1); // Extracting the domain from the email
-        
-        if(checkdnsrr($domain, "MX")) // Mail exchange records
-            $isValid = true;
+        $parts = explode('@', $fieldValue, 2);
 
-        return $isValid;
+        if (count($parts) !== 2 || $parts[1] === '') {
+            return false;
+        }
+
+        return checkdnsrr($parts[1], "MX") === true;
     }
 
     private static function validateObscuredEmail(string $fieldValue) : bool
