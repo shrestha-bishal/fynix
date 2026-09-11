@@ -14,6 +14,20 @@ abstract class ValidatorBase implements Validatable
     protected ?int $maxLength = null;
     protected bool $isRequired = true;
     protected bool $includeGenericValidation = true;
+    /** @var list<mixed>|null */
+    protected ?array $allowedValues = null;
+    /** @var list<mixed>|null */
+    protected ?array $disallowedValues = null;
+    protected ?string $sameAsField = null;
+    protected ?string $differentFromField = null;
+    protected ?string $requiredIfField = null;
+    protected mixed $requiredIfValue = null;
+    protected bool $hasRequiredIf = false;
+    protected bool $requiredIfMatches = true;
+    protected ?string $prohibitedIfField = null;
+    protected mixed $prohibitedIfValue = null;
+    protected bool $hasProhibitedIf = false;
+    protected bool $prohibitedIfMatches = true;
     
     protected function __construct(string $name, string $propertyName)
     {
@@ -22,9 +36,10 @@ abstract class ValidatorBase implements Validatable
     }
 
     /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
+    public static function __makeInternal(string $name, string $propertyName, mixed ...$arguments): static
     {
-        return new static($name, $propertyName);
+        // @phpstan-ignore new.static
+        return new static($name, $propertyName, ...$arguments);
     }
 
     protected function with(string $property, mixed $value): static
@@ -90,6 +105,64 @@ abstract class ValidatorBase implements Validatable
         return $this->genericValidation(false);
     }
 
+    /** @param list<mixed> $values */
+    public function in(array $values): static
+    {
+        return $this->with('allowedValues', $values);
+    }
+
+    /** @param list<mixed> $values */
+    public function notIn(array $values): static
+    {
+        return $this->with('disallowedValues', $values);
+    }
+
+    public function sameAs(string $field): static
+    {
+        return $this->with('sameAsField', $field);
+    }
+
+    public function differentFrom(string $field): static
+    {
+        return $this->with('differentFromField', $field);
+    }
+
+    public function requiredIf(string $field, mixed $value): static
+    {
+        $clone = $this->with('requiredIfField', $field);
+        $clone = $clone->with('requiredIfValue', $value);
+        $clone = $clone->with('requiredIfMatches', true);
+
+        return $clone->with('hasRequiredIf', true);
+    }
+
+    public function requiredUnless(string $field, mixed $value): static
+    {
+        $clone = $this->with('requiredIfField', $field);
+        $clone = $clone->with('requiredIfValue', $value);
+        $clone = $clone->with('requiredIfMatches', false);
+
+        return $clone->with('hasRequiredIf', true);
+    }
+
+    public function prohibitedIf(string $field, mixed $value): static
+    {
+        $clone = $this->with('prohibitedIfField', $field);
+        $clone = $clone->with('prohibitedIfValue', $value);
+        $clone = $clone->with('prohibitedIfMatches', true);
+
+        return $clone->with('hasProhibitedIf', true);
+    }
+
+    public function prohibitedUnless(string $field, mixed $value): static
+    {
+        $clone = $this->with('prohibitedIfField', $field);
+        $clone = $clone->with('prohibitedIfValue', $value);
+        $clone = $clone->with('prohibitedIfMatches', false);
+
+        return $clone->with('hasProhibitedIf', true);
+    }
+
     protected function validatedConstraint(int|float $value): int
     {
         if ($value < 0 || $value > PHP_INT_MAX || $value != (int) $value) {
@@ -99,9 +172,9 @@ abstract class ValidatorBase implements Validatable
         return (int) $value;
     }
 
-    public function validateField(mixed $fieldValue) : ?ValidationError
+    public function validateField(mixed $fieldValue, ?object $data = null) : ?ValidationError
     {
-        return $this->validateFieldAll($fieldValue)[0] ?? null;
+        return $this->validateFieldAll($fieldValue, $data)[0] ?? null;
     }
 
     /**
@@ -110,10 +183,15 @@ abstract class ValidatorBase implements Validatable
      * The first-error validateField() method remains available for simple consumers.
      */
     /** @return list<ValidationError> */
-    public function validateFieldAll(mixed $fieldValue): array
+    public function validateFieldAll(mixed $fieldValue, ?object $data = null): array
     {
         /** @var list<ValidationError> $errors */
         $errors = [];
+
+        $conditionalPresenceError = $this->validateConditionalPresence($fieldValue, $data);
+        if ($conditionalPresenceError !== null) {
+            return [$conditionalPresenceError];
+        }
 
         if($this->includeGenericValidation) 
         {
@@ -121,7 +199,7 @@ abstract class ValidatorBase implements Validatable
                 $fieldValue = trim($fieldValue);
 
             if ($fieldValue === null || $fieldValue === '') {
-                if ($this->isRequired)
+                if ($this->isRequiredFor($data))
                     return [new ValidationError($this, "$this->name is required.", 'required')];
 
                 return [];
@@ -132,6 +210,11 @@ abstract class ValidatorBase implements Validatable
         }
 
         $errors = [...$errors, ...$this->validateAll($fieldValue)];
+
+        if (empty($errors)) {
+            $errors = [...$errors, ...$this->validateValueSet($fieldValue)];
+            $errors = [...$errors, ...$this->validateRelatedFields($fieldValue, $data)];
+        }
 
         return $errors;
     }
@@ -184,6 +267,65 @@ abstract class ValidatorBase implements Validatable
         if(is_string($fieldValue) && preg_match('/<[^>]*>/', $fieldValue) === 1)
             return [new ValidationError($this, "$this->name cannot contain HTML tags.", 'html.forbidden')];
         
+        return [];
+    }
+
+    /** @return list<ValidationError> */
+    private function validateValueSet(mixed $fieldValue): array
+    {
+        if ($this->allowedValues !== null && !in_array($fieldValue, $this->allowedValues, true)) {
+            return [new ValidationError($this, "$this->name must be one of the allowed values.", 'value.not_allowed', ['values' => $this->allowedValues])];
+        }
+
+        if ($this->disallowedValues !== null && in_array($fieldValue, $this->disallowedValues, true)) {
+            return [new ValidationError($this, "$this->name contains a disallowed value.", 'value.disallowed')];
+        }
+
+        return [];
+    }
+
+    private function isRequiredFor(?object $data): bool
+    {
+        if (!$this->hasRequiredIf || $data === null) {
+            return $this->isRequired;
+        }
+
+        $matches = (($data->{$this->requiredIfField} ?? null) === $this->requiredIfValue);
+
+        return $this->requiredIfMatches ? $matches : !$matches;
+    }
+
+    private function validateConditionalPresence(mixed $fieldValue, ?object $data): ?ValidationError
+    {
+        if (!$this->hasProhibitedIf || $data === null) {
+            return null;
+        }
+
+        $matches = (($data->{$this->prohibitedIfField} ?? null) === $this->prohibitedIfValue);
+        $isProhibited = $this->prohibitedIfMatches ? $matches : !$matches;
+
+        if ($isProhibited && $fieldValue !== null && $fieldValue !== '') {
+            return new ValidationError($this, "$this->name is not allowed in the current context.", 'prohibited');
+        }
+
+        return null;
+    }
+
+    /** @return list<ValidationError> */
+    private function validateRelatedFields(mixed $fieldValue, ?object $data): array
+    {
+        if ($data === null) {
+            return [];
+        }
+
+        if ($this->sameAsField !== null && $fieldValue !== ($data->{$this->sameAsField} ?? null)) {
+            return [new ValidationError($this, "$this->name must match {$this->sameAsField}.", 'same_as')];
+        }
+
+        if ($this->differentFromField !== null && $fieldValue === ($data->{$this->differentFromField} ?? null)) {
+            return [new ValidationError($this, "$this->name must differ from {$this->differentFromField}.", 'different_from')];
+        }
+
         return [];
     }
 }

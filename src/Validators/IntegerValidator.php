@@ -15,11 +15,6 @@ class IntegerValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function min(int $value): static
     {
         return $this->with('minValue', $value);

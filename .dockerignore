@@ -1,0 +1,6 @@
+.git
+.history
+vendor
+composer.lock
+.phpunit.result.cache
+.vscode

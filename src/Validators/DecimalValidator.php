@@ -15,11 +15,6 @@ class DecimalValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function min(float|int $value): static
     {
         return $this->with('minValue', (float) $value);

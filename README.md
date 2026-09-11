@@ -281,7 +281,7 @@ The library is organized into several core components:
 | UuidValidator            | Validates UUID values.                                                                        | `optional()`                                                                                |
 | IpAddressValidator       | Validates IPv4 and IPv6 addresses.                                                            | `optional()`                                                                                |
 | RegexValidator           | Validates strings against a regular expression.                                               | `optional()`                                                                                |
-| ArrayValidator           | Validates arrays and their item count.                                                        | `min()`, `max()`, `optional()`                                                               |
+| ArrayValidator           | Validates arrays, item counts, and optional per-item rules.                                  | `min()`, `max()`, `each()`, `optional()`                                                     |
 | EnumValidator            | Validates backed enum values or enum instances.                                               | `optional()`                                                                                |
 | FileValidator            | Validates uploaded files, size, and optional extensions.                                      | `maxFileSizeMB()`, `extensions()`, `optional()`                                              |
 | UsernameValidator        | Validates username format and optional application-backed uniqueness.                         | `length()`, `uniqueUsing()`, `optional()`                                                    |
@@ -293,7 +293,15 @@ The library is organized into several core components:
 | ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | `min()`, `max()`, `isRequired()`, `optional()`                                                |
 
 ### ValidatorBase
-Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion) and requires child classes to implement `validate($fieldValue)` for specific logic.
+Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion, allowed/disallowed values, and cross-field constraints) and requires child classes to implement `validate($fieldValue)` for specific logic.
+
+Generic constraints include `in()`, `notIn()`, `sameAs()`, `differentFrom()`, `requiredIf()`, `requiredUnless()`, `prohibitedIf()`, and `prohibitedUnless()`. Cross-field constraints are evaluated when validating a registered object:
+```php
+ValidationRegistry::register(RegistrationDto::class, static fn (RuleSet $rules): array => [
+    $rules->string('passwordConfirmation')->sameAs('password'),
+    $rules->string('companyName')->optional()->requiredIf('accountType', 'business'),
+]);
+```
 
 ### StringValidator
 Validates string type, length, nullability, and excludes HTML tags. Usage:
@@ -901,6 +909,13 @@ PHPUnit tests are provided with the package:
 
 ```bash
 composer test
+composer analyse
+```
+
+If PHP and Composer are not installed locally, run the same checks in Docker:
+
+```bash
+docker compose run --rm test
 ```
 
 ## Contributing

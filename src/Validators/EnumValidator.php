@@ -15,11 +15,6 @@ class EnumValidator extends ValidatorBase
         $this->enumClass = $enumClass;
     }
 
-    public static function __makeInternal(string $name, string $propertyName, string $enumClass): static
-    {
-        return new static($name, $propertyName, $enumClass);
-    }
-
     public function validate(mixed $fieldValue): ?ValidationError
     {
         if ($fieldValue instanceof $this->enumClass) {

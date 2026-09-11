@@ -18,12 +18,6 @@ class NumberValidator extends ValidatorBase {
         $this->maxLength = 30;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function min(int|float $value): static
     {
         if (!is_finite((float) $value)) {

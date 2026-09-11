@@ -21,12 +21,6 @@ class ObjectValidator extends ValidatorBase {
         $this->includeGenericValidation = false;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName, string $className): static
-    {
-        return new static($name, $propertyName, $className);
-    }
-
     public function validate(mixed $fieldValue): ?ValidationError
     {
         return null;

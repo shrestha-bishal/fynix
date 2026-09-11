@@ -19,11 +19,6 @@ class RegexValidator extends ValidatorBase
         $this->pattern = $pattern;
     }
 
-    public static function __makeInternal(string $name, string $propertyName, string $pattern): static
-    {
-        return new static($name, $propertyName, $pattern);
-    }
-
     public function validate(mixed $fieldValue): ?ValidationError
     {
         return is_string($fieldValue) && preg_match($this->pattern, $fieldValue) === 1

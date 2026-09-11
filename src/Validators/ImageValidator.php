@@ -15,12 +15,6 @@ class ImageValidator extends ValidatorBase
         $this->includeGenericValidation = false;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function maxFileSizeMB(int $megabytes): static
     {
         if ($megabytes < 1) {

@@ -23,6 +23,7 @@ final class ValidationRegistry implements ValidatorRegistryInterface
 
         $rules = $ruleFactory(new RuleSet($class));
         foreach ($rules as $rule) {
+            // @phpstan-ignore instanceof.alwaysTrue
             if (!$rule instanceof Validatable) {
                 throw new InvalidArgumentException('Rule factories must return only Validatable instances.');
             }

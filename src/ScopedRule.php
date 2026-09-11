@@ -32,6 +32,11 @@ final class ScopedRule
         return Rule::arrayOf($this->property($field));
     }
 
+    public function array(string $field): Validators\ArrayValidator
+    {
+        return $this->arrayOf($field);
+    }
+
     public function url(string $field): Validators\UrlValidator
     {
         return Rule::url($this->property($field));

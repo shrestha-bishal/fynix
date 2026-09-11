@@ -12,11 +12,6 @@ class UuidValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function validate(mixed $fieldValue): ?ValidationError
     {
         $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';

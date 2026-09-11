@@ -9,16 +9,12 @@ class ArrayValidator extends ValidatorBase
 {
     protected ?int $minItems = null;
     protected ?int $maxItems = null;
+    protected ?ValidatorBase $itemValidator = null;
 
     protected function __construct(string $name, string $propertyName)
     {
         parent::__construct($name, $propertyName);
         $this->includeGenericValidation = false;
-    }
-
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
     }
 
     public function min(int $items): static
@@ -31,26 +27,53 @@ class ArrayValidator extends ValidatorBase
         return $this->with('maxItems', $this->validateCount($items));
     }
 
+    public function each(ValidatorBase $validator): static
+    {
+        return $this->with('itemValidator', $validator);
+    }
+
     public function validate(mixed $fieldValue): ?ValidationError
     {
+        return $this->validateAll($fieldValue)[0] ?? null;
+    }
+
+    /** @return list<ValidationError> */
+    public function validateAll(mixed $fieldValue): array
+    {
         if (($fieldValue === null || $fieldValue === '') && !$this->isRequired) {
-            return null;
+            return [];
         }
 
         if (!is_array($fieldValue)) {
-            return new ValidationError($this, "$this->name must be an array.", 'array.invalid');
+            return [new ValidationError($this, "$this->name must be an array.", 'array.invalid')];
         }
 
         $count = count($fieldValue);
         if ($this->minItems !== null && $count < $this->minItems) {
-            return new ValidationError($this, "$this->name must contain at least $this->minItems items.", 'array.min');
+            return [new ValidationError($this, "$this->name must contain at least $this->minItems items.", 'array.min')];
         }
 
         if ($this->maxItems !== null && $count > $this->maxItems) {
-            return new ValidationError($this, "$this->name can contain at most $this->maxItems items.", 'array.max');
+            return [new ValidationError($this, "$this->name can contain at most $this->maxItems items.", 'array.max')];
         }
 
-        return null;
+        if ($this->itemValidator === null) {
+            return [];
+        }
+
+        $errors = [];
+        foreach ($fieldValue as $index => $item) {
+            foreach ($this->itemValidator->validateFieldAll($item) as $error) {
+                $errors[] = ValidationError::forField(
+                    $this->propertyName . '.' . $index,
+                    $error->message,
+                    $error->code,
+                    $error->parameters
+                );
+            }
+        }
+
+        return $errors;
     }
 
     private function validateCount(int $items): int

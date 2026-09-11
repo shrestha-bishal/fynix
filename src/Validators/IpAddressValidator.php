@@ -12,11 +12,6 @@ class IpAddressValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function validate(mixed $fieldValue): ?ValidationError
     {
         return is_string($fieldValue) && filter_var($fieldValue, FILTER_VALIDATE_IP) !== false
