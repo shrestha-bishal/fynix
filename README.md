@@ -29,6 +29,7 @@
     - ValidationHandler
     - ValidationRegistry
     - ValidationError
+    - Rules builder
 
 4. [Validator Classes](#validator-classes)
     - ValidatorBase
@@ -41,6 +42,7 @@
     - ImagesValidator
     - ObjectValidator
     - ObjectArrayValidator
+    - UsernameValidator
 
 5. [Fluent Validator Configuration](#fluent-validator-configuration)
 
@@ -399,6 +401,24 @@ $validator = new StringValidator(
 ```
 
 Misspelled properties throw an `InvalidArgumentException` when the rule is created.
+
+### Fluent Rule Builder
+For larger DTOs, use `Rules::for()` to build a callable registry definition:
+```php
+use Fynix\Rules;
+use function Fynix\nameof;
+
+ValidationRegistry::register(
+    User::class,
+    Rules::for(User::class)
+        ->string(nameof(User::class, 'firstName'))
+        ->min(2)
+        ->max(50)
+        ->email(nameof(User::class, 'email'))
+);
+```
+
+Each constraint applies to the most recently declared rule. The builder validates every property through `nameof()` when the rule is defined.
 
 ### String Validation
 ```php
