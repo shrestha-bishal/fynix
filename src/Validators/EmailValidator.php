@@ -2,11 +2,10 @@
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
-use Fynix\ValidationOptions\EmailValidationOptions;
 
-class EmailValidator extends ValidatorBase 
+class EmailValidator extends LengthValidatorBase
 {
-    private bool $_isUsername;
+    private bool $_isUsername = false;
 
     /**
      * Constructor for the EmailValidation class.
@@ -19,12 +18,16 @@ class EmailValidator extends ValidatorBase
      */
     public function __construct(
         string $name, 
-        string $propertyName,
-        ?EmailValidationOptions $options = null)
+        string $propertyName)
     {
-        $options ??= new EmailValidationOptions();
-        $this->_isUsername = $options->isUsername;
-        parent::__construct($name, $propertyName, $options);
+        parent::__construct($name, $propertyName);
+        $this->length(6, 100);
+    }
+
+    public function username(bool $enabled = true): static
+    {
+        $this->_isUsername = $enabled;
+        return $this;
     }
 
     public function validate($fieldValue) : ?ValidationError

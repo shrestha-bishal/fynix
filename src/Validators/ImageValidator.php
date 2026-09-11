@@ -2,25 +2,25 @@
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
-use Fynix\ValidationOptions\ImageValidationOptions;
 
 class ImageValidator extends ValidatorBase 
 {
     private int $_maxFileSizeMB = 5; // - 5MB
 
-    public function __construct(
-        string $name, 
-        string $propertyName, 
-        ?ImageValidationOptions $options = null) 
+    public function __construct(string $name, string $propertyName)
     {
-        $options ??= new ImageValidationOptions();
+        parent::__construct($name, $propertyName);
+        $this->withoutGenericValidation();
+    }
 
-        if($options->maxFileSizeMB != null) 
-        {
-            $this->_maxFileSizeMB = $options->maxFileSizeMB;
+    public function maxFileSizeMB(int $megabytes): static
+    {
+        if ($megabytes < 1) {
+            throw new \InvalidArgumentException('The maximum file size must be at least 1 MB.');
         }
 
-        parent::__construct($name, $propertyName, $options);
+        $this->_maxFileSizeMB = $megabytes;
+        return $this;
     }
 
     public function validate($fieldValue) : ?ValidationError 

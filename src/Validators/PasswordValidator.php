@@ -2,9 +2,8 @@
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
-use Fynix\ValidationOptions\PasswordValidationOptions;
 
-class PasswordValidator extends ValidatorBase 
+class PasswordValidator extends LengthValidatorBase
 {
     /**
      * Constructor for the PhoneNumberValidation class.
@@ -17,11 +16,10 @@ class PasswordValidator extends ValidatorBase
      */
     public function __construct(
         string $name, 
-        string $propertyName, 
-        ?PasswordValidationOptions $options = null)
+        string $propertyName)
     {
-        $options ??= new PasswordValidationOptions();
-        parent::__construct($name, $propertyName, $options);
+        parent::__construct($name, $propertyName);
+        $this->length(8, 30);
     }
 
     public function validate($fieldValue) : ?ValidationError

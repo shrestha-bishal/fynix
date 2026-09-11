@@ -25,7 +25,7 @@
 
 3. [Architecture Overview](#architecture-overview)
     - Validator Classes
-    - Validator Options
+    - Fluent Validator Configuration
     - ValidationHandler
     - ValidationRegistry
     - ValidationError
@@ -42,14 +42,7 @@
     - ObjectValidator
     - ObjectArrayValidator
 
-5. [Validator Options](#validator-options)
-    - ValidationOptionsBase
-    - StringValidationOptions
-    - NumberValidationOptions
-    - EmailValidationOptions
-    - PhoneNumberValidationOptions
-    - PasswordValidationOptions
-    - ImageValidationOptions
+5. [Fluent Validator Configuration](#fluent-validator-configuration)
 
 6. [Validation Matrix](#validation-matrix)
     - Feature Comparison Table
@@ -89,13 +82,13 @@
 
 10. [Extending the Library](#extending-the-library)
     - Creating Custom Validators
-    - Creating Custom Options Classes
+    - Creating Custom Validators
 
 11. [Best Practices & Advanced Patterns](#best-practices--advanced-patterns)
     - Centralize Validation Logic
     - Normalize Errors for UI
     - Custom Validators
-    - Custom Options
+    - Fluent Configuration
     - Batch Validation
 
 12. [Installation](#installation)
@@ -177,10 +170,10 @@ class ValidationRuleServiceProvider extends ServiceProvider
     private static function registerDimensionValidation() : void {
         ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
             return [
-                new NumberValidator('Length', 'lengthCm', new NumberValidationOptions(number: [1, 1800])),
-                new NumberValidator('Width', 'widthCm', new NumberValidationOptions(number: [1, 1800])),
-                new NumberValidator('Height', 'heightCm', new NumberValidationOptions(number: [1, 2000])),
-                new NumberValidator('Weight', 'weightKg', new NumberValidationOptions(number: [1, 1000]))
+                (new NumberValidator('Length', 'lengthCm'))->min(1)->max(1800),
+                (new NumberValidator('Width', 'widthCm'))->min(1)->max(1800),
+                (new NumberValidator('Height', 'heightCm'))->min(1)->max(2000),
+                (new NumberValidator('Weight', 'weightKg'))->min(1)->max(1000)
             ];
         });
     }
@@ -200,9 +193,9 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
             return [
                 new StringValidator('Suburb', 'suburb'),
-                new NumberValidator('Postcode', 'postcode', new NumberValidationOptions(length: [2, 10])),
-                new StringValidator('State', 'state', new StringValidationOptions(length: [2, 6])),
-                new StringValidator('Country', 'countryCode', new StringValidationOptions(length: [2, 4]))
+                (new NumberValidator('Postcode', 'postcode'))->length(2, 10),
+                (new StringValidator('State', 'state'))->length(2, 6),
+                (new StringValidator('Country', 'countryCode'))->length(2, 4)
             ];
         });
     }
@@ -212,7 +205,7 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
             return[
                 new ObjectArrayValidator('packages', PackageDto::class),
-                new StringValidator('Customer name', 'customerName', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                (new StringValidator('Customer name', 'customerName'))->length(0, 50)->optional(),
                 new ObjectValidator('pickupAddress', AddressDto::class),
                 new ObjectValidator('deliveryAddress', AddressDto::class),
             ];
@@ -223,7 +216,7 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
             return [
                 new StringValidator('Package Type', 'type'),
-                new StringValidator('Description', 'description', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                (new StringValidator('Description', 'description'))->length(0, 50)->optional(),
                 new ObjectValidator('dimensions', DimensionDto::class),
                 new ObjectArrayValidator('items', ItemDto::class)
             ];
@@ -251,7 +244,7 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 ## Features
 - **Comprehensive Validation**: Strings, numbers, emails, phone numbers, passwords, images, arrays of images, nested objects, and arrays of objects.
 - **Extensible Architecture**: Easily add custom validation rules or extend built-in validators.
-- **Validator Options**: Fine-grained control over required fields, length, numeric ranges, file types, and more.
+- **Fluent Configuration**: Fine-grained control over required fields, length, numeric ranges, file types, and more.
 - **Nested & Array Validation**: Validate nested objects and arrays of objects using registered rules.
 - **Error Normalization**: Flatten nested error structures for easy form binding.
 - **Centralized Registry**: Register and retrieve validation rules for any class.
@@ -263,22 +256,22 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 
 The library is organized into several core components:
 - **Validator Classes**: Each validator encapsulates logic for a specific data type or structure.
-- **Validator Options**: Option classes provide configuration for validators, such as length, required status, and custom constraints.
+- **Fluent Configuration**: Validators configure their supported constraints through chainable methods such as `min()`, `max()`, `length()`, and `optional()`.
 - **ValidationHandler**: Orchestrates validation, supports batch and associative validation, and error normalization.
 - **ValidationRegistry**: Central registry for registering and retrieving validation rules for custom classes.
 - **ValidationError**: Standardized error object for all validators.
 
 ## Validator Classes
 
-| Validator                | Description                                                                                   | Options Class                   | Key Options                                                                                   |
-|--------------------------|-----------------------------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------------------------------|
-| StringValidator          | Validates string type, length, nullability, and excludes HTML tags.                           | StringValidationOptions          | `length`, `isRequired`, `includeGenericValidation`                                            |
-| NumberValidator          | Validates numeric type and enforces min/max value constraints.                                | NumberValidationOptions          | `length`, `number` (min/max), `isRequired`, `includeGenericValidation`                        |
-| EmailValidator           | Validates email format, DNS, uniqueness, and structure.                                       | EmailValidationOptions           | `length`, `isUsername`, `isRequired`, `includeGenericValidation`                              |
-| PhoneNumberValidator     | Validates phone number format, allowed symbols, and length.                                   | PhoneNumberValidationOptions     | `length`, `isRequired`, `includeGenericValidation`                                            |
-| PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | PasswordValidationOptions        | `length`, `isRequired`, `includeGenericValidation`                                            |
-| ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
-| ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | ImageValidationOptions           | `numImage`, `maxFileSizeMB`, `isRequired`, `includeGenericValidation`                         |
+| Validator                | Description                                                                                   | Fluent configuration                                                                       |
+|--------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
+| StringValidator          | Validates string type, length, nullability, and excludes HTML tags.                           | `length()`, `min()`, `max()`, `optional()`                                                  |
+| NumberValidator          | Validates numeric type and enforces min/max value constraints.                                | `min()`, `max()`, `length()`, `optional()`                                                   |
+| EmailValidator           | Validates email format, DNS, uniqueness, and structure.                                       | `length()`, `username()`, `optional()`                                                      |
+| PhoneNumberValidator     | Validates phone number format, allowed symbols, and length.                                   | `length()`, `optional()`                                                                    |
+| PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | `length()`, `optional()`                                                                    |
+| ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | `maxFileSizeMB()`, `optional()`                                                             |
+| ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | `min()`, `max()`, `optional()`                                                              |
 | ObjectValidator          | Validates a nested object property using registered rules for its class.                      | N/A                              | N/A                                                                                         |
 | ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | N/A                              | N/A     
 
@@ -288,50 +281,43 @@ Abstract base for all validators. Implements generic validation (nullability, le
 ### StringValidator
 Validates string type, length, nullability, and excludes HTML tags. Usage:
 ```php
-$options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
-$validator = new StringValidator('First Name', 'firstName', $options);
+$validator = (new StringValidator('First Name', 'firstName'))->length(2, 50);
 ```
 
 ### NumberValidator
 Validates numeric type and enforces min/max value constraints. Usage:
 ```php
-$options = new NumberValidationOptions(['min' => 1, 'max' => 30], true, true, ['min' => 18, 'max' => 99]);
-$validator = new NumberValidator('Age', 'age', $options);
+$validator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
 ```
 
 ### EmailValidator
 Validates email format, DNS, uniqueness, and structure. Usage:
 ```php
-$options = new EmailValidationOptions(['min' => 6, 'max' => 100], true, true, true);
-$validator = new EmailValidator('Email', 'email', $options);
+$validator = (new EmailValidator('Email', 'email'))->username();
 ```
 
 ### PhoneNumberValidator
 Validates phone number format, allowed symbols, and length. Usage:
 ```php
-$options = new PhoneNumberValidationOptions(['min' => 10, 'max' => 12], true);
-$validator = new PhoneNumberValidator('Phone', 'phoneNumber', $options);
+$validator = (new PhoneNumberValidator('Phone', 'phoneNumber'))->length(10, 12);
 ```
 
 ### PasswordValidator
 Enforces password strength: uppercase, lowercase, number, special character, length. Usage:
 ```php
-$options = new PasswordValidationOptions(['min' => 8, 'max' => 30], true);
-$validator = new PasswordValidator('Password', 'password', $options);
+$validator = (new PasswordValidator('Password', 'password'))->length(8, 30);
 ```
 
 ### ImageValidator
 Validates a single image file: size, extension, and actual image content. Usage:
 ```php
-$options = new ImageValidationOptions(['min' => 1, 'max' => 1], true, false, 5);
-$validator = new ImageValidator('Profile Picture', 'profilePic', $options);
+$validator = (new ImageValidator('Profile Picture', 'profilePic'))->maxFileSizeMB(5);
 ```
 
 ### ImagesValidator
 Validates an array of image files, each using ImageValidator. Usage:
 ```php
-$options = new ImageValidationOptions(['min' => 1, 'max' => 5], true, false, 5);
-$validator = new ImagesValidator('Gallery', 'galleryImages', $options);
+$validator = (new ImagesValidator('Gallery', 'galleryImages'))->min(1)->max(5);
 ```
 
 ### ObjectValidator
@@ -346,20 +332,9 @@ Validates an array of objects, each using registered rules for its class. Usage:
 $validator = new ObjectArrayValidator('items', FreightItemDto::class);
 ```
 
-## Validator Options
+## Fluent Validator Configuration
 
-All validators accept an options object to configure their behavior. These options classes allow fine-tuning of validation logic for each field type.
-
-| Class Name                     | Description | Key Properties / Options |
-|--------------------------------|-------------|--------------------------|
-| **ValidationOptionsBase**       | Common base for all options classes | `includeGenericValidation`, `fieldType`, `isRequired`, `length` (min/max array) |
-| **StringValidationOptions**     | Controls string validation | `length` (min/max, default: 2-50), `isRequired` (default: true), `includeGenericValidation` (default: true) |
-| **NumberValidationOptions**     | Controls number validation | `length` (string length), `number` (min/max numeric value), `isRequired`, `includeGenericValidation` |
-| **EmailValidationOptions**      | Controls email validation | `length` (min/max), `isUsername` (check username uniqueness), `isRequired`, `includeGenericValidation` |
-| **PhoneNumberValidationOptions**| Controls phone number validation | `length` (min/max), `isRequired`, `includeGenericValidation` |
-| **PasswordValidationOptions**   | Controls password validation | `length` (min/max), `isRequired`, `includeGenericValidation` |
-| **ImageValidationOptions**      | Controls image validation | `numImage` (min/max), `maxFileSizeMB`, `isRequired`, `includeGenericValidation` |
-| **ObjectValidationOptions**     | Controls nested object validation | `validateOnNull` (whether to validate when the object is null) |
+Validators are configured directly and return themselves from each supported method. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for a single image file, and `optional()` for nullable fields.
 
 ## Validation Matrix
 
@@ -378,46 +353,36 @@ All validators accept an options object to configure their behavior. These optio
 ### String Validation
 ```php
 use Fynix\Validators\StringValidator;
-use Fynix\ValidationOptions\StringValidationOptions;
 
-$options = new StringValidationOptions(['min' => 2, 'max' => 50], true);
-$stringValidator = new StringValidator('First Name', 'firstName', $options);
+$stringValidator = (new StringValidator('First Name', 'firstName'))->length(2, 50);
 ```
 
 ### Email Validation
 ```php
 use Fynix\Validators\EmailValidator;
-use Fynix\ValidationOptions\EmailValidationOptions;
 
-$emailOptions = new EmailValidationOptions(['min' => 6, 'max' => 100], true, true, true);
-$emailValidator = new EmailValidator('Email', 'email', $emailOptions);
+$emailValidator = (new EmailValidator('Email', 'email'))->username();
 ```
 
 ### Number Validation
 ```php
 use Fynix\Validators\NumberValidator;
-use Fynix\ValidationOptions\NumberValidationOptions;
 
-$numberOptions = new NumberValidationOptions(['min' => 1, 'max' => 30], true, true, ['min' => 18, 'max' => 99]);
-$numberValidator = new NumberValidator('Age', 'age', $numberOptions);
+$numberValidator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
 ```
 
 ### Password Validation
 ```php
 use Fynix\Validators\PasswordValidator;
-use Fynix\ValidationOptions\PasswordValidationOptions;
 
-$passwordOptions = new PasswordValidationOptions(['min' => 8, 'max' => 30], true);
-$passwordValidator = new PasswordValidator('Password', 'password', $passwordOptions);
+$passwordValidator = (new PasswordValidator('Password', 'password'))->length(8, 30);
 ```
 
 ### Image Validation
 ```php
 use Fynix\Validators\ImageValidator;
-use Fynix\ValidationOptions\ImageValidationOptions;
 
-$imageOptions = new ImageValidationOptions(['min' => 1, 'max' => 1], true, false, 5);
-$imageValidator = new ImageValidator('Profile Picture', 'profilePic', $imageOptions);
+$imageValidator = (new ImageValidator('Profile Picture', 'profilePic'))->maxFileSizeMB(5);
 ```
 
 ### Nested Object Validation
@@ -542,8 +507,6 @@ use App\Dto\Quote\FreightDto;
 use App\Dto\Quote\ItemDto;
 use App\Dto\Quote\PackageDto;
 use Illuminate\Support\ServiceProvider;
-use Fynix\ValidationOptions\NumberValidationOptions;
-use Fynix\ValidationOptions\StringValidationOptions;
 use Fynix\ValidationRegistry;
 use Fynix\Validators\NumberValidator;
 use Fynix\Validators\ObjectArrayValidator;
@@ -575,10 +538,10 @@ class ValidationRuleServiceProvider extends ServiceProvider
     private static function registerDimensionValidation() : void {
         ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
             return [
-                new NumberValidator('Length', 'lengthCm', new NumberValidationOptions(number: [1, 1800])),
-                new NumberValidator('Width', 'widthCm', new NumberValidationOptions(number: [1, 1800])),
-                new NumberValidator('Height', 'heightCm', new NumberValidationOptions(number: [1, 2000])),
-                new NumberValidator('Weight', 'weightKg', new NumberValidationOptions(number: [1, 1000]))
+                (new NumberValidator('Length', 'lengthCm'))->min(1)->max(1800),
+                (new NumberValidator('Width', 'widthCm'))->min(1)->max(1800),
+                (new NumberValidator('Height', 'heightCm'))->min(1)->max(2000),
+                (new NumberValidator('Weight', 'weightKg'))->min(1)->max(1000)
             ];
         });
     }
@@ -598,9 +561,9 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
             return [
                 new StringValidator('Suburb', 'suburb'),
-                new NumberValidator('Postcode', 'postcode', new NumberValidationOptions(length: [2, 10])),
-                new StringValidator('State', 'state', new StringValidationOptions(length: [2, 6])),
-                new StringValidator('Country', 'countryCode', new StringValidationOptions(length: [2, 4]))
+                (new NumberValidator('Postcode', 'postcode'))->length(2, 10),
+                (new StringValidator('State', 'state'))->length(2, 6),
+                (new StringValidator('Country', 'countryCode'))->length(2, 4)
             ];
         });
     }
@@ -610,7 +573,7 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
             return[
                 new ObjectArrayValidator('packages', PackageDto::class),
-                new StringValidator('Customer name', 'customerName', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                (new StringValidator('Customer name', 'customerName'))->length(0, 50)->optional(),
                 new ObjectValidator('pickupAddress', AddressDto::class),
                 new ObjectValidator('deliveryAddress', AddressDto::class),
             ];
@@ -621,7 +584,7 @@ class ValidationRuleServiceProvider extends ServiceProvider
         ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
             return [
                 new StringValidator('Package Type', 'type'),
-                new StringValidator('Description', 'description', new StringValidationOptions(length: [0, 50], isRequired: false)),
+                (new StringValidator('Description', 'description'))->length(0, 50)->optional(),
                 new ObjectValidator('dimensions', DimensionDto::class),
                 new ObjectArrayValidator('items', ItemDto::class)
             ];
@@ -673,7 +636,7 @@ Represents a validation error, including the rule, error message, and field name
 
 ## Extending the Library
 
-You can create your own custom validators by extending `ValidatorBase` and implementing the `validate($fieldValue)` method. Custom option classes can also be created by extending `ValidationOptionsBase`.
+You can create your own custom validators by extending `ValidatorBase` and implementing the `validate($fieldValue)` method. Add validator-specific fluent methods when your custom validator needs extra constraints.
 
 ```php
 class CustomValidator extends ValidatorBase {
@@ -687,7 +650,7 @@ class CustomValidator extends ValidatorBase {
 - **Centralize Validation Logic**: Use `ValidationRegistry` to keep validation rules organized and reusable for each class.
 - **Normalize Errors for UI**: Use `ValidationHandler::flattenValidationErrors()` to flatten errors for form binding and display.
 - **Custom Validators**: Extend `ValidatorBase` for domain-specific validation needs.
-- **Custom Options**: Extend `ValidationOptionsBase` to add new configuration parameters for your validators.
+- **Fluent Configuration**: Add chainable methods to custom validators for constraints that only they can enforce.
 - **Batch Validation**: Validate multiple objects at once with `ValidationHandler::validateMany()` or associative arrays with `validateManyAssoc()`.
 
 ## Installation

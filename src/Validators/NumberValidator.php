@@ -2,11 +2,10 @@
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
-use Fynix\ValidationOptions\NumberValidationOptions;
 
 class NumberValidator extends ValidatorBase {
-    private ?int $_minNumber;
-    private ?int $_maxNumber;
+    private int|float|null $_minNumber = null;
+    private int|float|null $_maxNumber = null;
 
     /**
      * Constructor for the NumberValidation class.
@@ -22,17 +21,37 @@ class NumberValidator extends ValidatorBase {
     
     public function __construct(
         string $name, 
-        string $propertyName, 
-        ?NumberValidationOptions $options = null)
+        string $propertyName)
     { 
-        $options ??= new NumberValidationOptions();
+        parent::__construct($name, $propertyName);
+        $this->length(1, 30);
+    }
 
-        if($options->number != null) {
-            $this->_minNumber = $options->number['min'] ?? $options->number[0] ?? null;
-            $this->_maxNumber = $options->number['max'] ?? $options->number[1] ?? null;
+    public function min(int|float $value): static
+    {
+        if (!is_finite((float) $value)) {
+            throw new \InvalidArgumentException('The minimum number must be finite.');
         }
 
-        parent::__construct($name, $propertyName, $options);
+        $this->_minNumber = $value;
+        return $this;
+    }
+
+    public function max(int|float $value): static
+    {
+        if (!is_finite((float) $value)) {
+            throw new \InvalidArgumentException('The maximum number must be finite.');
+        }
+
+        $this->_maxNumber = $value;
+        return $this;
+    }
+
+    public function length(int $min, int $max): static
+    {
+        $this->minLength = $this->validatedConstraint($min);
+        $this->maxLength = $this->validatedConstraint($max);
+        return $this;
     }
 
     public function validate($fieldValue) : ?ValidationError
@@ -42,11 +61,14 @@ class NumberValidator extends ValidatorBase {
         if (!is_numeric($fieldValue))
             return new ValidationError($this, "$this->name must be a number.");
 
-        if ($this->_minNumber == null || $fieldValue > $this->_maxNumber == null)
+        if ($this->_minNumber === null && $this->_maxNumber === null)
             return null;
 
-        if ($fieldValue < $this->_minNumber || $fieldValue > $this->_maxNumber)
-            return new ValidationError($this, "$this->name must be between $this->_minNumber and $this->_maxNumber.");
+        if ($this->_minNumber !== null && $fieldValue < $this->_minNumber)
+            return new ValidationError($this, "$this->name must be at least $this->_minNumber.");
+
+        if ($this->_maxNumber !== null && $fieldValue > $this->_maxNumber)
+            return new ValidationError($this, "$this->name must be at most $this->_maxNumber.");
 
         return $error;
     }
