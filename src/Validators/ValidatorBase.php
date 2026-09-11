@@ -18,6 +18,13 @@ abstract class ValidatorBase
         $this->propertyName = $propertyName;
     }
 
+    public static function make(string $field, ?string $label = null): static
+    {
+        $label ??= ucfirst(preg_replace('/(?<!^)[A-Z]/', ' $0', $field) ?? $field);
+
+        return new static($label, $field);
+    }
+
     public function isRequired(bool $required = true): static
     {
         $this->isRequired = $required;

@@ -30,6 +30,7 @@
     - ValidationRegistry
     - ValidationError
     - [Fluent Rule Builder](#fluent-rule-builder)
+    - [Rule Facade](#rule-facade)
 
 4. [Validator Classes](#validator-classes)
     - ValidatorBase
@@ -446,6 +447,20 @@ $rules = Rules::for(User::class)
 ```
 
 This is the rule definition stage; actual validation still happens when you call `ValidationHandler::validate($user)` or use a validator directly.
+
+### Rule Facade
+For a single field, `Rule` is the concise counterpart to `Rules::for()`. It provides static entry points for each validator while keeping the existing constructors available:
+
+```php
+use Fynix\Rule;
+use Fynix\Validators\StringValidator;
+
+$bare = Rule::string('firstName');
+$checked = Rule::string(User::class, 'firstName');
+$explicit = new StringValidator('First Name', 'firstName');
+```
+
+The bare form uses the field name directly and derives its label automatically. The class-checked form validates that the property exists and then uses the property name as the field. This is additive sugar for single-field rules, not a replacement for `new StringValidator(...)`, `Rules::for()`, or any existing API.
 
 ### Direct Validation Without a Registry
 When you do not need object-level rule registration, you can validate a single value directly with a validator instance. This is useful for form fields, ad hoc checks, and isolated DTO members.

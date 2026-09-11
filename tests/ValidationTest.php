@@ -5,6 +5,7 @@ namespace Fynix\Tests;
 use Fynix\ValidationHandler;
 use Fynix\ValidationError;
 use Fynix\ValidationRegistry;
+use Fynix\Rule;
 use Fynix\Rules;
 use Fynix\Validators\EmailValidator;
 use Fynix\Validators\ObjectArrayValidator;
@@ -47,6 +48,63 @@ final class ValidationTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         nameof(Node::class, 'missing');
+    }
+
+    public function testRuleStringMatchesStringValidatorFactory(): void
+    {
+        $ruleValidator = Rule::string('firstName');
+        $directValidator = StringValidator::make('firstName');
+
+        self::assertSame($directValidator::class, $ruleValidator::class);
+        self::assertSame('First Name', $ruleValidator->name());
+        self::assertSame($directValidator->name(), $ruleValidator->name());
+        self::assertSame($directValidator->propertyName(), $ruleValidator->propertyName());
+        self::assertSame(
+            $directValidator->validateField('x')?->code,
+            $ruleValidator->validateField('x')?->code
+        );
+    }
+
+    public function testRuleStringCanValidateAClassProperty(): void
+    {
+        $validator = Rule::string(User::class, 'firstName');
+
+        self::assertSame('firstName', $validator->propertyName());
+    }
+
+    public function testRuleStringRejectsAnUnknownClassProperty(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage(User::class . ' does not contain property doesNotExist.');
+
+        Rule::string(User::class, 'doesNotExist');
+    }
+
+    public function testRuleStringRejectsAnUnknownClass(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Class or interface NotARealClass does not exist.');
+
+        Rule::string('NotARealClass', 'x');
+    }
+
+    public function testRuleHasAnEntryPointForEveryConcreteValidator(): void
+    {
+        foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') as $validatorFile) {
+            $className = 'Fynix\\Validators\\' . basename($validatorFile, '.php');
+            $reflection = new \ReflectionClass($className);
+
+            if ($reflection->isAbstract()) {
+                continue;
+            }
+
+            $methodName = lcfirst(substr($reflection->getShortName(), 0, -strlen('Validator')));
+
+            self::assertTrue(
+                method_exists(Rule::class, $methodName),
+                "Missing Rule::$methodName() for {$reflection->getName()}."
+            );
+        }
     }
 
     public function testFluentRulesBuilderCreatesRegistryRules(): void
@@ -173,6 +231,11 @@ final class Node
 {
     public string $name = '';
     public ?Node $child = null;
+}
+
+final class User
+{
+    public string $firstName = '';
 }
 
 final class Item
