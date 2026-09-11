@@ -2,9 +2,8 @@
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
-use Fynix\ValidationOptions\StringValidationOptions;
 
-class StringValidator extends ValidatorBase {
+class StringValidator extends LengthValidatorBase {
     /**
      * Constructor for the StringValidation class.
      *
@@ -17,11 +16,10 @@ class StringValidator extends ValidatorBase {
     
     public function __construct(
         string $name,
-        string $propertyName,
-        ?StringValidationOptions $options = null)
+        string $propertyName)
     { 
-        $options ??= new StringValidationOptions();
-        parent::__construct($name, $propertyName, $options);
+        parent::__construct($name, $propertyName);
+        $this->length(2, 50);
     }
 
     public function validate($fieldValue) : ?ValidationError

@@ -7,10 +7,9 @@ abstract class ValidatorBase
 {
     public string $name;
     public string $propertyName;
-    public ?int $minLength;
-    public ?int $maxLength;
-    public $isRequired;
-    public $fieldType;
+    public ?int $minLength = null;
+    public ?int $maxLength = null;
+    public bool $isRequired = true;
     public $includeGenericValidation = true;
     
     /**
@@ -24,19 +23,41 @@ abstract class ValidatorBase
      * @param string $msg An error message for the validation error.
      * @param bool $is_required (Optional) Whether the field is required. Defaults to true.
      */
-    function __construct(
-        string $name, 
-        string $propertyName, 
-         $options,
-        ) 
+    function __construct(string $name, string $propertyName)
     {
         $this->name = ucfirst($name);
         $this->propertyName = $propertyName;
-        $this->includeGenericValidation = $options->includeGenericValidation;
-        $this->fieldType = $options->fieldType;
-        $this->isRequired = $options->isRequired;
-        $this->minLength = $options->length['min'] ?? $options->length[0] ?? null;
-        $this->maxLength = $options->length['max'] ?? $options->length[1] ?? null;
+    }
+
+    public function required(bool $required = true): static
+    {
+        $this->isRequired = $required;
+        return $this;
+    }
+
+    public function optional(): static
+    {
+        return $this->required(false);
+    }
+
+    public function genericValidation(bool $enabled = true): static
+    {
+        $this->includeGenericValidation = $enabled;
+        return $this;
+    }
+
+    public function withoutGenericValidation(): static
+    {
+        return $this->genericValidation(false);
+    }
+
+    protected function validatedConstraint(int|float $value): int
+    {
+        if ($value < 0 || $value > PHP_INT_MAX || $value != (int) $value) {
+            throw new \InvalidArgumentException('Validation constraints must be non-negative integers.');
+        }
+
+        return (int) $value;
     }
 
     public function validateField($fieldValue) : ?ValidationError
@@ -45,16 +66,18 @@ abstract class ValidatorBase
 
         if($this->includeGenericValidation) 
         {
-            $fieldValue = trim($fieldValue);
+            if (is_string($fieldValue))
+                $fieldValue = trim($fieldValue);
+
+            if ($fieldValue === null || $fieldValue === '') {
+                if ($this->isRequired)
+                    return new ValidationError($this, "$this->name is required.");
+
+                return null;
+            }
 
             $error = $this->validateHTML($fieldValue);
             if($error !== null) return $error;
-
-            if($this->isRequired) 
-            {
-                $error = $this->validateNullable($fieldValue);
-                if($error !== null) return $error;
-            }
             
             $error = $this->validateLength($fieldValue);
             if($error !== null) return $error;
@@ -80,7 +103,8 @@ abstract class ValidatorBase
      */
     private function validateNullable($fieldValue) : ?validationError
     {
-        $fieldValue = trim($fieldValue);
+        if (is_string($fieldValue))
+            $fieldValue = trim($fieldValue);
 
         if(empty($fieldValue) || $fieldValue == null) {
             return new ValidationError($this, "$this->name is required.");
@@ -99,7 +123,10 @@ abstract class ValidatorBase
         if($this->minLength == null || $this->maxLength == null)
             return null;
     
-        $stringLength = strlen($fieldValue);
+        if (!is_scalar($fieldValue))
+            return null;
+
+        $stringLength = strlen((string) $fieldValue);
 
         if($stringLength < $this->minLength) 
             return new ValidationError($this, "$this->name is too short. This field must be at least $this->minLength characters.");
@@ -117,7 +144,7 @@ abstract class ValidatorBase
      */
     private function validateHTML($fieldValue) : ?ValidationError
     {
-        if(preg_match('/<[^>]*>/', $fieldValue)) 
+        if(is_string($fieldValue) && preg_match('/<[^>]*>/', $fieldValue))
             return new ValidationError($this, "$this->name cannot contain HTML tags.");
         
         return null;
