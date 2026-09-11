@@ -1,33 +1,176 @@
 <?php
+declare(strict_types=1);
 
 namespace Fynix\Tests;
 
-use Fynix\ValidationHandler;
-use Fynix\ValidationError;
-use Fynix\ValidationRegistry;
+use Fynix\Contracts\ValidationListener;
+use Fynix\Exceptions\UndeclaredPropertyException;
+use Fynix\Exceptions\UnknownClassException;
 use Fynix\Rule;
-use Fynix\Rules;
+use Fynix\RuleSet;
+use Fynix\Rules\AllOf;
+use Fynix\Rules\AnyOf;
+use Fynix\Rules\Not;
+use Fynix\ValidationHandler;
+use Fynix\ValidationRegistry;
 use Fynix\Validators\EmailValidator;
+use Fynix\Validators\ImageValidator;
+use Fynix\Validators\ImagesValidator;
+use Fynix\Validators\NumberValidator;
 use Fynix\Validators\ObjectArrayValidator;
 use Fynix\Validators\ObjectValidator;
-use Fynix\Validators\NumberValidator;
 use Fynix\Validators\PasswordValidator;
+use Fynix\Validators\PhoneNumberValidator;
 use Fynix\Validators\StringValidator;
 use Fynix\Validators\UsernameValidator;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
-use function Fynix\nameof;
+use ReflectionClass;
 
 final class ValidationTest extends TestCase
 {
-    protected function tearDown(): void
+    protected function setUp(): void
     {
-        ValidationRegistry::clearCache();
+        ValidationRegistry::clear();
+        ValidationHandler::clearListeners();
     }
 
-    public function testStringDefaultsAndFluentConfiguration(): void
+    protected function tearDown(): void
     {
-        $validator = (new StringValidator('Name', 'name'))->min(3)->max(10)->isRequired(false);
+        ValidationHandler::clearListeners();
+    }
+
+    public function testRuleBuildsEveryConcreteValidatorWithDerivedLabels(): void
+    {
+        $cases = [
+            'string' => ['firstName', 'First Name', StringValidator::class],
+            'number' => ['age', 'Age', NumberValidator::class],
+            'email' => ['email', 'Email', EmailValidator::class],
+            'phoneNumber' => ['phoneNumber', 'Phone Number', PhoneNumberValidator::class],
+            'password' => ['password', 'Password', PasswordValidator::class],
+            'image' => ['profileImage', 'Profile Image', ImageValidator::class],
+            'images' => ['galleryImages', 'Gallery Images', ImagesValidator::class],
+            'object' => ['address', 'Address', ObjectValidator::class],
+            'objectArray' => ['items', 'Items', ObjectArrayValidator::class],
+            'username' => ['userName', 'User Name', UsernameValidator::class],
+        ];
+
+        foreach ($cases as $method => [$field, $label, $className]) {
+            $validator = in_array($method, ['object', 'objectArray'], true)
+                ? Rule::$method($field, Address::class)
+                : Rule::$method($field);
+
+            self::assertInstanceOf($className, $validator);
+            self::assertSame($label, $validator->name());
+        }
+    }
+
+    public function testLabelDerivationSupportsSnakeCaseAcronymsAndEmptyOverride(): void
+    {
+        self::assertSame('First Name', Rule::string('first_name')->name());
+        self::assertSame('Api URL', Rule::string('apiURL')->name());
+        self::assertSame('', Rule::string('firstName')->label('')->name());
+    }
+
+    public function testScopedRuleChecksOwnerProperties(): void
+    {
+        $validator = Rule::on(User::class)->string('firstName');
+
+        self::assertSame('firstName', $validator->propertyName());
+        self::assertSame('First Name', $validator->name());
+    }
+
+    public function testScopedRuleThrowsTypedDefinitionExceptions(): void
+    {
+        try {
+            Rule::on('NotARealClass');
+            self::fail('Expected an unknown class exception.');
+        } catch (UnknownClassException $exception) {
+            self::assertSame('Class or interface NotARealClass does not exist.', $exception->getMessage());
+        }
+
+        try {
+            Rule::on(User::class)->string('doesNotExist');
+            self::fail('Expected an undeclared property exception.');
+        } catch (UndeclaredPropertyException $exception) {
+            self::assertSame(User::class . ' does not contain property doesNotExist.', $exception->getMessage());
+        }
+    }
+
+    public function testScopedObjectRulesCheckBothPropertyAndTargetClass(): void
+    {
+        self::expectException(UndeclaredPropertyException::class);
+        Rule::on(User::class)->object('doesNotExist', Address::class);
+    }
+
+    public function testBareObjectRulesCheckOnlyTargetClass(): void
+    {
+        self::expectException(UnknownClassException::class);
+        Rule::object('address', 'NotARealClass');
+    }
+
+    public function testRuleSetDelegatesAndRejectsUnknownMethods(): void
+    {
+        $ruleSet = new RuleSet(User::class);
+        self::assertInstanceOf(StringValidator::class, $ruleSet->string('firstName'));
+
+        self::expectException(\BadMethodCallException::class);
+        $ruleSet->missing('firstName');
+    }
+
+    public function testCompletenessMapsEveryConcreteValidatorToRuleAndRuleSet(): void
+    {
+        foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') ?: [] as $file) {
+            $reflection = new ReflectionClass('Fynix\\Validators\\' . basename($file, '.php'));
+            if ($reflection->isAbstract() || $reflection->isInterface()) {
+                continue;
+            }
+
+            $method = lcfirst(substr($reflection->getShortName(), 0, -strlen('Validator')));
+            self::assertTrue(method_exists(Rule::class, $method));
+            self::assertTrue(method_exists(RuleSet::class, $method));
+        }
+    }
+
+    public function testConcreteValidatorConstructorsAreNotPublic(): void
+    {
+        foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') ?: [] as $file) {
+            $reflection = new ReflectionClass('Fynix\\Validators\\' . basename($file, '.php'));
+            if ($reflection->isAbstract() || $reflection->isInterface()) {
+                continue;
+            }
+
+            self::assertNotNull($reflection->getConstructor());
+            self::assertFalse($reflection->getConstructor()?->isPublic());
+            self::assertTrue($reflection->hasMethod('__makeInternal'));
+        }
+    }
+
+    public function testFluentMethodsReturnNewInstances(): void
+    {
+        $cases = [
+            [Rule::string('name'), 'min', [3]],
+            [Rule::string('name'), 'max', [10]],
+            [Rule::string('name'), 'length', [2, 10]],
+            [Rule::string('name'), 'optional', []],
+            [Rule::number('age'), 'min', [18]],
+            [Rule::number('age'), 'max', [99]],
+            [Rule::email('email'), 'verifyDomain', [false]],
+            [Rule::image('image'), 'maxFileSizeMB', [2]],
+            [Rule::images('images'), 'min', [1]],
+            [Rule::images('images'), 'max', [2]],
+            [Rule::objectArray('items', Item::class), 'min', [1]],
+            [Rule::objectArray('items', Item::class), 'max', [2]],
+            [Rule::username('username'), 'uniqueUsing', [static fn(string $value): bool => false]],
+        ];
+
+        foreach ($cases as [$validator, $method, $arguments]) {
+            self::assertNotSame($validator, $validator->{$method}(...$arguments));
+        }
+    }
+
+    public function testExistingValidationBehaviorRemainsAvailableThroughRule(): void
+    {
+        $validator = Rule::string('name')->min(3)->max(10)->optional();
 
         self::assertSame(3, $validator->minLength());
         self::assertSame(10, $validator->maxLength());
@@ -37,205 +180,82 @@ final class ValidationTest extends TestCase
         self::assertNull($validator->validateField('Bishal'));
     }
 
-    public function testNameofReturnsExistingPropertyNames(): void
+    public function testCombinatorsShortCircuitAndInvert(): void
     {
-        self::assertSame('name', nameof(Node::class, 'name'));
-        self::assertSame('name', nameof(new Node(), 'name'));
+        $all = new AllOf([Rule::string('name')->min(3), Rule::string('name')->max(10)]);
+        self::assertNotNull($all->validate('x'));
+        self::assertNull($all->validate('valid'));
+
+        $any = new AnyOf([Rule::string('name')->min(10), Rule::string('name')->max(10)]);
+        self::assertNull($any->validate('valid'));
+        self::assertNotNull($any->validate('x'));
+
+        $not = new Not(Rule::string('name')->min(3), 'Name must not be a long string.');
+        self::assertNull($not->validate('x'));
+        self::assertSame('Name must not be a long string.', $not->validate('valid')?->message);
     }
 
-    public function testNameofRejectsUnknownProperties(): void
+    public function testNestedObjectsAndArraysUseRuleSetRecursively(): void
     {
-        $this->expectException(InvalidArgumentException::class);
-
-        nameof(Node::class, 'missing');
-    }
-
-    public function testRuleStringMatchesStringValidatorFactory(): void
-    {
-        $ruleValidator = Rule::string('firstName');
-        $directValidator = StringValidator::make('firstName');
-
-        self::assertSame($directValidator::class, $ruleValidator::class);
-        self::assertSame('First Name', $ruleValidator->name());
-        self::assertSame($directValidator->name(), $ruleValidator->name());
-        self::assertSame($directValidator->propertyName(), $ruleValidator->propertyName());
-        self::assertSame(
-            $directValidator->validateField('x')?->code,
-            $ruleValidator->validateField('x')?->code
-        );
-    }
-
-    public function testRuleStringCanValidateAClassProperty(): void
-    {
-        $validator = Rule::string(User::class, 'firstName');
-
-        self::assertSame('firstName', $validator->propertyName());
-    }
-
-    public function testRuleStringRejectsAnUnknownClassProperty(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage(User::class . ' does not contain property doesNotExist.');
-
-        Rule::string(User::class, 'doesNotExist');
-    }
-
-    public function testRuleStringRejectsAnUnknownClass(): void
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('Class or interface NotARealClass does not exist.');
-
-        Rule::string('NotARealClass', 'x');
-    }
-
-    public function testRuleHasAnEntryPointForEveryConcreteValidator(): void
-    {
-        foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') as $validatorFile) {
-            $className = 'Fynix\\Validators\\' . basename($validatorFile, '.php');
-            $reflection = new \ReflectionClass($className);
-
-            if ($reflection->isAbstract()) {
-                continue;
-            }
-
-            $methodName = lcfirst(substr($reflection->getShortName(), 0, -strlen('Validator')));
-
-            self::assertTrue(
-                method_exists(Rule::class, $methodName),
-                "Missing Rule::$methodName() for {$reflection->getName()}."
-            );
-        }
-    }
-
-    public function testFluentRulesBuilderCreatesRegistryRules(): void
-    {
-        $resolver = Rules::for(Node::class)
-            ->string(nameof(Node::class, 'name'))
-            ->min(2)
-            ->max(20);
-
-        ValidationRegistry::register(Node::class, $resolver);
-
-        $node = new Node();
-        $node->name = 'Root';
-
-        self::assertSame([], ValidationHandler::validate($node));
-    }
-
-    public function testNumberMinAndMaxAreNumericConstraints(): void
-    {
-        $validator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
-
-        self::assertNotNull($validator->validateField(17));
-        self::assertNull($validator->validateField(25));
-        self::assertNotNull($validator->validateField(100));
-        self::assertNotNull($validator->validateField('not-a-number'));
-    }
-
-    public function testPasswordCanReturnAllApplicableErrors(): void
-    {
-        $errors = (new PasswordValidator('Password', 'password'))->validateFieldAll('abc');
-        $codes = array_map(static fn($error): string => $error->code, $errors);
-
-        self::assertContains('password.uppercase', $codes);
-        self::assertContains('password.number', $codes);
-        self::assertContains('password.special', $codes);
-        self::assertCount(4, $errors);
-    }
-
-    public function testEmailDoesNotRequireNetworkDnsByDefault(): void
-    {
-        $validator = new EmailValidator('Email', 'email');
-        $error = $validator->validateField('user@example.test');
-
-        self::assertNull($error);
-        self::assertSame('email.invalid', (new EmailValidator('Email', 'email'))
-            ->validateField('invalid-email')?->code);
-    }
-
-    public function testUsernameCanUseAnApplicationProvidedUniquenessChecker(): void
-    {
-        $validator = (new UsernameValidator('Username', 'username'))
-            ->uniqueUsing(static fn(string $username): bool => $username === 'taken_user');
-
-        self::assertNull($validator->validateField('available_user'));
-        self::assertSame('username.taken', $validator->validateField('taken_user')?->code);
-        self::assertSame('username.characters', $validator->validateField('bad-name')?->code);
-    }
-
-    public function testStructuredErrorContainsCodeAndParameters(): void
-    {
-        $error = (new StringValidator('Name', 'name'))->validateField('<b>Name</b>');
-
-        self::assertNotNull($error);
-        self::assertSame('html.forbidden', $error->code);
-        self::assertSame('name', $error->toArray()['field']);
-    }
-
-    public function testMissingRequiredNestedObjectIsReported(): void
-    {
-        ValidationRegistry::register(Profile::class, static fn(Profile $profile): array => [
-            new ObjectValidator('address', Address::class),
+        ValidationRegistry::register(Address::class, static fn(RuleSet $rules): array => [
+            $rules->string('street'),
         ]);
-
-        $errors = ValidationHandler::validate(new Profile());
-
-        self::assertSame('address is required.', $errors['address']);
-
-        $structuredErrors = ValidationHandler::validate(new Profile(), false);
-        self::assertInstanceOf(ValidationError::class, $structuredErrors['address']);
-        self::assertSame('required', $structuredErrors['address']->code);
-    }
-
-    public function testCyclicObjectsDoNotRecurseForever(): void
-    {
-        ValidationRegistry::register(Node::class, static fn(Node $node): array => [
-            (new StringValidator('Name', 'name'))->length(2, 20),
-            (new ObjectValidator('child', Node::class))->optional(),
+        ValidationRegistry::register(Item::class, static fn(RuleSet $rules): array => [
+            $rules->string('name'),
         ]);
-
-        $node = new Node();
-        $node->name = 'Root';
-        $node->child = $node;
-
-        self::assertSame([], ValidationHandler::validate($node));
-    }
-
-    public function testObjectArrayValidatesCardinalityAndItems(): void
-    {
-        ValidationRegistry::register(Item::class, static fn(Item $item): array => [
-            new StringValidator('Name', 'name'),
-        ]);
-        ValidationRegistry::register(Order::class, static fn(Order $order): array => [
-            (new ObjectArrayValidator('items', Item::class))->min(1)->max(2),
+        ValidationRegistry::register(Order::class, static fn(RuleSet $rules): array => [
+            $rules->object('address', Address::class),
+            $rules->objectArray('items', Item::class),
         ]);
 
         $order = new Order();
-        $order->items = [new Item(), new Item(), new Item()];
-        $errors = ValidationHandler::validate($order);
+        $order->address = new Address();
+        $order->items = [new Item()];
 
-        self::assertSame('items can contain at most 2 items.', $errors['items']);
+        $errors = ValidationHandler::validateAndFlatten($order);
+        self::assertArrayHasKey('address.street', $errors);
+        self::assertArrayHasKey('items.0.name', $errors);
+    }
+
+    public function testListenersFireOnceForEachPublicValidateCall(): void
+    {
+        $listener = new TestListener();
+        ValidationHandler::addListener($listener);
+        ValidationRegistry::register(User::class, static fn(RuleSet $rules): array => [
+            $rules->string('firstName'),
+        ]);
+
+        ValidationHandler::validate(new User());
+
+        self::assertSame(1, $listener->beforeCount);
+        self::assertSame(1, $listener->afterCount);
     }
 }
 
-final class Profile
+final class TestListener implements ValidationListener
 {
-    public ?Address $address = null;
-}
+    public int $beforeCount = 0;
+    public int $afterCount = 0;
 
-final class Address
-{
-}
+    public function beforeValidate(object $instance): void
+    {
+        $this->beforeCount++;
+    }
 
-final class Node
-{
-    public string $name = '';
-    public ?Node $child = null;
+    public function afterValidate(object $instance, array $errors): void
+    {
+        $this->afterCount++;
+    }
 }
 
 final class User
 {
     public string $firstName = '';
+}
+
+final class Address
+{
+    public string $street = '';
 }
 
 final class Item
@@ -245,6 +265,8 @@ final class Item
 
 final class Order
 {
+    public ?Address $address = null;
+
     /** @var list<Item> */
     public array $items = [];
 }

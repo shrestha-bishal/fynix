@@ -1,6 +1,9 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix;
 
+use Fynix\Contracts\Validatable;
 use Fynix\Validators\ValidatorBase;
 
 /**
@@ -21,14 +24,14 @@ class Validator
     /**
      * Retrieve validation errors for the given data object and rules.
      *
-    * @param array<string, ValidatorBase|array> $rules An array of validation rule instances
+    * @param array<string|int, Validatable|array<mixed>> $rules An array of validation rule instances
      * @param object $data              The data object to validate.
      * @param bool   $flattenToString  If true, returns error messages as strings; otherwise, returns ValidationError objects.
      *
      * @return array<string, string[]|ValidationError[]> An associative array of validation errors keyed by property name.
      */
     /**
-     * @param array<string|int, ValidatorBase|array<mixed>> $rules
+    * @param array<string|int, Validatable|array<mixed>> $rules
     * @param array<string, bool>|null $visited
      * @return array<string|int, mixed>
      */
@@ -120,8 +123,10 @@ class Validator
           continue;
         }
 
-        /** @var ValidatorBase $rule */
-        $rule = $rule;
+        if (!$rule instanceof ValidatorBase) {
+          throw new \InvalidArgumentException('Registered rules must expose a validator field.');
+        }
+
         $field = $rule->propertyName();
         $fieldValue = isset($data->{$field}) ? $data->{$field} : null;
         $validations = $rule->validateFieldAll($fieldValue);

@@ -1,16 +1,25 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
 
 class PasswordValidator extends LengthValidatorBase
 {
-    public function __construct(
+    protected function __construct(
         string $name, 
         string $propertyName)
     {
         parent::__construct($name, $propertyName);
-        $this->length(8, 30);
+        $this->minLength = 8;
+        $this->maxLength = 30;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     public function validate(mixed $fieldValue) : ?ValidationError

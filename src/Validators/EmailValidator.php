@@ -1,24 +1,32 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
 
 class EmailValidator extends LengthValidatorBase
 {
-    private bool $_verifyDomain = false;
+    protected bool $_verifyDomain = false;
 
-    public function __construct(
+    protected function __construct(
         string $name, 
         string $propertyName)
     {
         parent::__construct($name, $propertyName);
-        $this->length(6, 100);
+        $this->minLength = 6;
+        $this->maxLength = 100;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     public function verifyDomain(bool $enabled = true): static
     {
-        $this->_verifyDomain = $enabled;
-        return $this;
+        return $this->with('_verifyDomain', $enabled);
     }
 
     public function validate(mixed $fieldValue) : ?ValidationError

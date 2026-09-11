@@ -1,24 +1,24 @@
 <?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 abstract class LengthValidatorBase extends ValidatorBase
 {
     public function min(int|float $value): static
     {
-        $this->minLength = $this->validatedConstraint($value);
-        return $this;
+        return $this->with('minLength', $this->validatedConstraint($value));
     }
 
     public function max(int|float $value): static
     {
-        $this->maxLength = $this->validatedConstraint($value);
-        return $this;
+        return $this->with('maxLength', $this->validatedConstraint($value));
     }
 
     public function length(int $min, int $max): static
     {
-        $this->minLength = $this->validatedConstraint($min);
-        $this->maxLength = $this->validatedConstraint($max);
-        return $this;
+        $clone = $this->with('minLength', $this->validatedConstraint($min));
+
+        return $clone->with('maxLength', $this->validatedConstraint($max));
     }
 }

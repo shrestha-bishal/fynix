@@ -1,9 +1,12 @@
 <?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
+use Fynix\Contracts\Validatable;
 
-abstract class ValidatorBase 
+abstract class ValidatorBase implements Validatable
 {
     protected string $name;
     protected string $propertyName;
@@ -12,23 +15,34 @@ abstract class ValidatorBase
     protected bool $isRequired = true;
     protected bool $includeGenericValidation = true;
     
-    public function __construct(string $name, string $propertyName)
+    protected function __construct(string $name, string $propertyName)
     {
         $this->name = ucfirst($name);
         $this->propertyName = $propertyName;
     }
 
-    public static function make(string $field, ?string $label = null): static
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
     {
-        $label ??= ucfirst(preg_replace('/(?<!^)[A-Z]/', ' $0', $field) ?? $field);
+        return new static($name, $propertyName);
+    }
 
-        return new static($label, $field);
+    protected function with(string $property, mixed $value): static
+    {
+        $clone = clone $this;
+        $clone->{$property} = $value;
+
+        return $clone;
+    }
+
+    public function label(string $label): static
+    {
+        return $this->with('name', $label);
     }
 
     public function isRequired(bool $required = true): static
     {
-        $this->isRequired = $required;
-        return $this;
+        return $this->with('isRequired', $required);
     }
 
     public function required(bool $required = true): static
@@ -68,8 +82,7 @@ abstract class ValidatorBase
 
     public function genericValidation(bool $enabled = true): static
     {
-        $this->includeGenericValidation = $enabled;
-        return $this;
+        return $this->with('includeGenericValidation', $enabled);
     }
 
     public function withoutGenericValidation(): static

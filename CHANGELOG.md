@@ -4,6 +4,16 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.0.0-dev] - 2026-09-11
+
+### Breaking
+
+- Replaced public validator construction with `Rule`, `ScopedRule`, and `RuleSet`.
+- Validator fluent methods now return immutable clones instead of mutating the original instance.
+- Replaced instance-based registry closures with `RuleSet` factories.
+- Kept `ValidationRegistry` static; registry ownership and calls remain `ValidationRegistry::register(...)`.
+- Added typed rule-definition exceptions, composable rules, and validation listeners.
+
 ## [2.0.0] - 2026-09-11
 
 ### Added

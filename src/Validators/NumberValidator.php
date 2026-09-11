@@ -1,18 +1,27 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
 
 class NumberValidator extends ValidatorBase {
-    private int|float|null $_minNumber = null;
-    private int|float|null $_maxNumber = null;
+    protected int|float|null $_minNumber = null;
+    protected int|float|null $_maxNumber = null;
 
-    public function __construct(
+    protected function __construct(
         string $name, 
         string $propertyName)
     { 
         parent::__construct($name, $propertyName);
-        $this->length(1, 30);
+        $this->minLength = 1;
+        $this->maxLength = 30;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     public function min(int|float $value): static
@@ -21,8 +30,7 @@ class NumberValidator extends ValidatorBase {
             throw new \InvalidArgumentException('The minimum number must be finite.');
         }
 
-        $this->_minNumber = $value;
-        return $this;
+        return $this->with('_minNumber', $value);
     }
 
     public function max(int|float $value): static
@@ -31,15 +39,14 @@ class NumberValidator extends ValidatorBase {
             throw new \InvalidArgumentException('The maximum number must be finite.');
         }
 
-        $this->_maxNumber = $value;
-        return $this;
+        return $this->with('_maxNumber', $value);
     }
 
     public function length(int $min, int $max): static
     {
-        $this->minLength = $this->validatedConstraint($min);
-        $this->maxLength = $this->validatedConstraint($max);
-        return $this;
+        $clone = $this->with('minLength', $this->validatedConstraint($min));
+
+        return $clone->with('maxLength', $this->validatedConstraint($max));
     }
 
     public function validate(mixed $fieldValue) : ?ValidationError
