@@ -16,12 +16,6 @@ class PhoneNumberValidator extends LengthValidatorBase
         $this->maxLength = 12;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function validate(mixed $fieldValue) : ?ValidationError
     {
         if (!is_string($fieldValue))

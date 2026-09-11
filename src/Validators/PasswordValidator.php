@@ -16,12 +16,6 @@ class PasswordValidator extends LengthValidatorBase
         $this->maxLength = 30;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function validate(mixed $fieldValue) : ?ValidationError
     {
         return $this->validateAll($fieldValue)[0] ?? null;

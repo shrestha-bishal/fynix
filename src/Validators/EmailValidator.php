@@ -18,12 +18,6 @@ class EmailValidator extends LengthValidatorBase
         $this->maxLength = 100;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function verifyDomain(bool $enabled = true): static
     {
         return $this->with('_verifyDomain', $enabled);

@@ -70,6 +70,10 @@ final class ValidationTest extends TestCase
         self::assertNotNull(Rule::boolean('enabled')->validate('true'));
         self::assertNull(Rule::dateTime('createdAt')->validate('2026-09-11'));
         self::assertNull(Rule::arrayOf('tags')->min(1)->validate(['php']));
+        self::assertCount(
+            1,
+            Rule::arrayOf('tags')->each(Rule::string('tag'))->validateFieldAll(['php', ''])
+        );
         self::assertNull(Rule::url('website')->validate('https://example.com'));
         self::assertNull(Rule::uuid('id')->validate('550e8400-e29b-41d4-a716-446655440000'));
         self::assertNull(Rule::integer('count')->min(1)->validate(2));
@@ -130,12 +134,14 @@ final class ValidationTest extends TestCase
         self::assertInstanceOf(StringValidator::class, $ruleSet->string('firstName'));
 
         self::expectException(\BadMethodCallException::class);
+        /** @phpstan-ignore-next-line */
         $ruleSet->missing('firstName');
     }
 
     public function testCompletenessMapsEveryConcreteValidatorToRuleAndRuleSet(): void
     {
         foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') ?: [] as $file) {
+            /** @phpstan-ignore argument.type */
             $reflection = new ReflectionClass('Fynix\\Validators\\' . basename($file, '.php'));
             if ($reflection->isAbstract() || $reflection->isInterface()) {
                 continue;
@@ -150,13 +156,14 @@ final class ValidationTest extends TestCase
     public function testConcreteValidatorConstructorsAreNotPublic(): void
     {
         foreach (glob(__DIR__ . '/../src/Validators/*Validator.php') ?: [] as $file) {
+            /** @phpstan-ignore argument.type */
             $reflection = new ReflectionClass('Fynix\\Validators\\' . basename($file, '.php'));
             if ($reflection->isAbstract() || $reflection->isInterface()) {
                 continue;
             }
 
             self::assertNotNull($reflection->getConstructor());
-            self::assertFalse($reflection->getConstructor()?->isPublic());
+            self::assertFalse($reflection->getConstructor()->isPublic());
             self::assertTrue($reflection->hasMethod('__makeInternal'));
         }
     }
@@ -194,6 +201,44 @@ final class ValidationTest extends TestCase
         self::assertNull($validator->validateField(null));
         self::assertNotNull($validator->validateField('ab'));
         self::assertNull($validator->validateField('Bishal'));
+    }
+
+    public function testGenericValueSetRulesUseStrictComparison(): void
+    {
+        self::assertNull(Rule::string('role')->in(['admin', 'editor'])->validateField('admin'));
+        self::assertNotNull(Rule::string('role')->in(['admin', 'editor'])->validateField('owner'));
+        self::assertNull(Rule::number('age')->notIn([0, 1])->validateField(18));
+        self::assertNotNull(Rule::number('age')->notIn([18])->validateField(18));
+        self::assertNotNull(Rule::number('age')->in(['18'])->validateField(18));
+    }
+
+    public function testCrossFieldAndConditionalRulesUseTheOwningObject(): void
+    {
+        ValidationRegistry::register(Registration::class, static fn(RuleSet $rules): array => [
+            $rules->string('passwordConfirmation')->sameAs('password'),
+            $rules->string('username')->differentFrom('password'),
+            $rules->string('companyName')->optional()->requiredIf('accountType', 'business'),
+            $rules->string('individualId')->optional()->requiredUnless('accountType', 'individual'),
+            $rules->string('nickname')->optional()->prohibitedIf('accountType', 'business'),
+            $rules->string('businessName')->optional()->prohibitedUnless('accountType', 'individual'),
+        ]);
+
+        $registration = new Registration();
+        $registration->password = 'secret';
+        $registration->passwordConfirmation = 'mismatch';
+        $registration->username = 'secret';
+        $registration->accountType = 'business';
+        $registration->nickname = 'not allowed';
+        $registration->businessName = 'Acme';
+
+        $errors = ValidationHandler::validateAndFlatten($registration);
+
+        self::assertArrayHasKey('passwordConfirmation', $errors);
+        self::assertArrayHasKey('username', $errors);
+        self::assertArrayHasKey('companyName', $errors);
+        self::assertArrayHasKey('individualId', $errors);
+        self::assertArrayHasKey('nickname', $errors);
+        self::assertArrayHasKey('businessName', $errors);
     }
 
     public function testCombinatorsShortCircuitAndInvert(): void
@@ -285,6 +330,18 @@ final class Order
 
     /** @var list<Item> */
     public array $items = [];
+}
+
+final class Registration
+{
+    public string $password = '';
+    public string $passwordConfirmation = '';
+    public string $username = '';
+    public string $accountType = '';
+    public ?string $companyName = null;
+    public ?string $individualId = null;
+    public ?string $nickname = null;
+    public ?string $businessName = null;
 }
 
 enum Status: string

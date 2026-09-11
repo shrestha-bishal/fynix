@@ -8,16 +8,11 @@ use Fynix\ValidationError;
 
 class DateTimeValidator extends ValidatorBase
 {
-    private ?string $format = null;
+    protected ?string $format = null;
 
     protected function __construct(string $name, string $propertyName)
     {
         parent::__construct($name, $propertyName);
-    }
-
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
     }
 
     public function format(string $format): static

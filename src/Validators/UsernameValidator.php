@@ -8,19 +8,13 @@ use Fynix\ValidationError;
 class UsernameValidator extends LengthValidatorBase
 {
     /** @var callable(string): bool|null */
-    private $existsChecker = null;
+    protected $existsChecker = null;
 
     protected function __construct(string $name, string $propertyName)
     {
         parent::__construct($name, $propertyName);
         $this->minLength = 3;
         $this->maxLength = 30;
-    }
-
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
     }
 
     /**

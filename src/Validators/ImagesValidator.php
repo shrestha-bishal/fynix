@@ -29,12 +29,6 @@ class ImagesValidator extends ValidatorBase {
         $this->includeGenericValidation = false;
     }
 
-    /** @internal */
-    public static function __makeInternal(string $name, string $propertyName): static
-    {
-        return new static($name, $propertyName);
-    }
-
     public function min(int|float $value): static
     {
         return $this->with('minImages', $this->validateImageCount($value));

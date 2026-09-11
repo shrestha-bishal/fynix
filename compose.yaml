@@ -1,0 +1,6 @@
+services:
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sh -lc "composer test && composer analyse"

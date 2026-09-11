@@ -55,6 +55,11 @@ final class Rule
         return ArrayValidator::__makeInternal(self::labelFor($field), $field);
     }
 
+    public static function array(string $field): ArrayValidator
+    {
+        return self::arrayOf($field);
+    }
+
     public static function url(string $field): UrlValidator
     {
         return UrlValidator::__makeInternal(self::labelFor($field), $field);
