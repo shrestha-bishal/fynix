@@ -1,1 +1,1 @@
-# Upgrade guide — Fynix
+# Upgrade guide -Fynix

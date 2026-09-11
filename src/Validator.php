@@ -80,7 +80,7 @@ class Validator
 
                   $errors[$key][$index] = self::formatError(
                     "$key.$index",
-                    'Invalid item — expected object.',
+                    'Invalid item -expected object.',
                     'object.invalid',
                     $flattenToString
                   );
@@ -111,7 +111,7 @@ class Validator
           else {
               $errors[$key] = self::formatError(
                 (string) $key,
-                'Invalid value — expected object or array of objects.',
+                'Invalid value -expected object or array of objects.',
                 'object.invalid',
                 $flattenToString
               );

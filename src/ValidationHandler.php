@@ -67,7 +67,7 @@ class ValidationHandler {
                                 $structureErrors[$definition->propertyName] = [];
                             }
 
-                            $structureErrors[$definition->propertyName][$index] = self::structureError($definition->propertyName . '.' . $index, 'Invalid item — expected object.', 'object.invalid', $flattenErrorToString);
+                            $structureErrors[$definition->propertyName][$index] = self::structureError($definition->propertyName . '.' . $index, 'Invalid item -expected object.', 'object.invalid', $flattenErrorToString);
                         }
                     }
                 } else {
