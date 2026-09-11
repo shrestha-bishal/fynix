@@ -1,6 +1,5 @@
 {
     "name": "bishalshrestha/fynix",
-    "version": "3.0.0-dev",
     "description": "A modern, extensible PHP library for validating primitive data types, files, nested objects, and arrays of objects with reusable and centralized validation rules.",
     "type": "library",
     "license": "MIT",
