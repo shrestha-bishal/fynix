@@ -5,7 +5,6 @@ use Fynix\ValidationError;
 
 class EmailValidator extends LengthValidatorBase
 {
-    private bool $_isUsername = false;
     private bool $_verifyDomain = false;
 
     public function __construct(
@@ -14,12 +13,6 @@ class EmailValidator extends LengthValidatorBase
     {
         parent::__construct($name, $propertyName);
         $this->length(6, 100);
-    }
-
-    public function username(bool $enabled = true): static
-    {
-        $this->_isUsername = $enabled;
-        return $this;
     }
 
     public function verifyDomain(bool $enabled = true): static
@@ -44,15 +37,6 @@ class EmailValidator extends LengthValidatorBase
         if (self::validateObscuredEmail($fieldValue)) //counting consecutive dots
             return new ValidationError($this, "Email address contains consecutive dots.");
 
-        if($this->_isUsername) 
-        {
-            $isExistingUsername = self::validateExitingUsername($fieldValue);
-            if($isExistingUsername) 
-            {
-                return new ValidationError($this, "Username already exists. Please choose a different one.");
-            }
-        }
-
         return $error;
     }
 
@@ -76,9 +60,4 @@ class EmailValidator extends LengthValidatorBase
         return $isValid;
     }
 
-    private static function validateExitingUsername(string $fieldValue) : bool 
-    {
-        // Check the database records to see if the username exists.
-        return false;
-    }
 }

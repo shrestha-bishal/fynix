@@ -11,6 +11,7 @@ use Fynix\Validators\ObjectValidator;
 use Fynix\Validators\NumberValidator;
 use Fynix\Validators\PasswordValidator;
 use Fynix\Validators\StringValidator;
+use Fynix\Validators\UsernameValidator;
 use PHPUnit\Framework\TestCase;
 
 final class ValidationTest extends TestCase
@@ -61,6 +62,16 @@ final class ValidationTest extends TestCase
         self::assertNull($error);
         self::assertSame('email.invalid', (new EmailValidator('Email', 'email'))
             ->validateField('invalid-email')?->code);
+    }
+
+    public function testUsernameCanUseAnApplicationProvidedUniquenessChecker(): void
+    {
+        $validator = (new UsernameValidator('Username', 'username'))
+            ->uniqueUsing(static fn(string $username): bool => $username === 'taken_user');
+
+        self::assertNull($validator->validateField('available_user'));
+        self::assertSame('username.taken', $validator->validateField('taken_user')?->code);
+        self::assertSame('username.characters', $validator->validateField('bad-name')?->code);
     }
 
     public function testStructuredErrorContainsCodeAndParameters(): void
