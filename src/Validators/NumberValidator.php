@@ -7,18 +7,6 @@ class NumberValidator extends ValidatorBase {
     private int|float|null $_minNumber = null;
     private int|float|null $_maxNumber = null;
 
-    /**
-     * Constructor for the NumberValidation class.
-     *
-     * @param string $name The name of the validation.
-     * @param string $propertyName The name of the field to be validated.
-     * @param int $maxLength The maximum length of the number.
-     * @param int $minNumber The minimum value of the number.
-     * @param int $maxNumber The maximum value of the number.
-     * @param int $minLength The minimum value of the number.
-     * @param bool $isRequired Whether the field is required or not. Default is true.
-     */
-    
     public function __construct(
         string $name, 
         string $propertyName)
@@ -54,7 +42,7 @@ class NumberValidator extends ValidatorBase {
         return $this;
     }
 
-    public function validate($fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue) : ?ValidationError
     {
         $error = null;
 

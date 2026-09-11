@@ -5,15 +5,6 @@ use Fynix\ValidationError;
 
 class PasswordValidator extends LengthValidatorBase
 {
-    /**
-     * Constructor for the PhoneNumberValidation class.
-     *
-     * @param string $name The name of the validation.
-     * @param string $propertyName The name of the field to be validated.
-     * @param int $maxLength The maximum length of the number.
-     * @param int $minLength The minimum length of the number.
-     * @param bool $isRequired Whether the field is required or not. Default is true.
-     */
     public function __construct(
         string $name, 
         string $propertyName)
@@ -22,30 +13,35 @@ class PasswordValidator extends LengthValidatorBase
         $this->length(8, 30);
     }
 
-    public function validate($fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue) : ?ValidationError
     {
-        $error = null;
+        return $this->validateAll($fieldValue)[0] ?? null;
+    }
+
+    /** @return list<ValidationError> */
+    public function validateAll(mixed $fieldValue): array
+    {
+        if (!is_string($fieldValue))
+            return [new ValidationError($this, "$this->name must be a string.", 'password.invalid')];
+
+        $errors = [];
 
         if (!preg_match('/[A-Z]/', $fieldValue)) {
-            return new ValidationError($this, "$this->name must contain at least one uppercase letter.");
+            $errors[] = new ValidationError($this, "$this->name must contain at least one uppercase letter.", 'password.uppercase');
         }
 
         if (!preg_match('/[a-z]/', $fieldValue)) {
-            return new ValidationError($this, "$this->name must contain at least one lowercase letter.");
+            $errors[] = new ValidationError($this, "$this->name must contain at least one lowercase letter.", 'password.lowercase');
         }
 
         if (!preg_match('/\d/', $fieldValue)) {
-            return new ValidationError($this, "$this->name must contain at least one number.");
+            $errors[] = new ValidationError($this, "$this->name must contain at least one number.", 'password.number');
         }
 
         if (!preg_match('/[\W_]/', $fieldValue)) {
-            return new ValidationError($this, "$this->name must contain at least one special character.");
+            $errors[] = new ValidationError($this, "$this->name must contain at least one special character.", 'password.special');
         }
 
-        // if (preg_match('/\s/', $fieldValue)) {
-        //     return new ValidationError($this, "$this->name cannot contain spaces.");
-        // }
-
-        return $error;
+        return $errors;
     }
 }
