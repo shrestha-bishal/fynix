@@ -385,6 +385,21 @@ $errors = (new PasswordValidator('Password', 'password'))
 | Array Validation         |        |        |       |       |          |       | ✓      |        | ✓          |
 
 ## Basic Usage Examples
+
+### Property Names
+Use the Composer-autoloaded `nameof()` helper to validate property names when defining rules:
+```php
+use Fynix\Validators\StringValidator;
+use function Fynix\nameof;
+
+$validator = new StringValidator(
+    'First name',
+    nameof(User::class, 'firstName')
+);
+```
+
+Misspelled properties throw an `InvalidArgumentException` when the rule is created.
+
 ### String Validation
 ```php
 use Fynix\Validators\StringValidator;
