@@ -13,6 +13,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added conditional requiredness through `isRequired(bool)` with `requiredState()` for rule inspection.
 - Added all-errors validation through `validateFieldAll()` while preserving first-error `validateField()` compatibility.
 - Added `UsernameValidator` with injectable `uniqueUsing()` support for database-backed uniqueness checks.
+- Added Composer-autoloaded `Fynix\nameof()` for validated property names.
 - Added PHPUnit coverage and the `composer test` script.
 
 ### Changed

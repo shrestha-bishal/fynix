@@ -12,7 +12,9 @@ use Fynix\Validators\NumberValidator;
 use Fynix\Validators\PasswordValidator;
 use Fynix\Validators\StringValidator;
 use Fynix\Validators\UsernameValidator;
+use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
+use function Fynix\nameof;
 
 final class ValidationTest extends TestCase
 {
@@ -31,6 +33,19 @@ final class ValidationTest extends TestCase
         self::assertNull($validator->validateField(null));
         self::assertNotNull($validator->validateField('ab'));
         self::assertNull($validator->validateField('Bishal'));
+    }
+
+    public function testNameofReturnsExistingPropertyNames(): void
+    {
+        self::assertSame('name', nameof(Node::class, 'name'));
+        self::assertSame('name', nameof(new Node(), 'name'));
+    }
+
+    public function testNameofRejectsUnknownProperties(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        nameof(Node::class, 'missing');
     }
 
     public function testNumberMinAndMaxAreNumericConstraints(): void

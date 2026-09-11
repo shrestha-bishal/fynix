@@ -22,7 +22,10 @@
     "autoload": {
         "psr-4": {
             "Fynix\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     },
     "minimum-stability": "dev",
     "prefer-stable": true, 
