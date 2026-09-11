@@ -1,8 +1,12 @@
 <?php
+declare(strict_types=1);
 namespace Fynix;
 
 use Fynix\Validators\ObjectArrayValidator;
 use Fynix\Validators\ObjectValidator;
+use Fynix\Contracts\ValidationListener;
+use Fynix\Validators\ValidatorBase;
+use InvalidArgumentException;
 
 /**
  * Class ValidationHandler
@@ -12,6 +16,18 @@ use Fynix\Validators\ObjectValidator;
  */
 
 class ValidationHandler {
+    /** @var list<ValidationListener> */
+    private static array $listeners = [];
+
+    public static function addListener(ValidationListener $listener): void
+    {
+        self::$listeners[] = $listener;
+    }
+
+    public static function clearListeners(): void
+    {
+        self::$listeners = [];
+    }
     /**
      * Validate an instance and return errors.
      *
@@ -20,15 +36,31 @@ class ValidationHandler {
      */
     /** @return array<string|int, mixed> */
     public static function validate(object $instance, bool $flattenErrorToString = true) : array {
+        foreach (self::$listeners as $listener) {
+            $listener->beforeValidate($instance);
+        }
+
+        $errors = self::validateInternal($instance, $flattenErrorToString);
+
+        foreach (self::$listeners as $listener) {
+            $listener->afterValidate($instance, $errors);
+        }
+
+        return $errors;
+    }
+
+    /** @return array<string|int, mixed> */
+    private static function validateInternal(object $instance, bool $flattenErrorToString): array
+    {
         $class = get_class($instance);
-        $definitions = ValidationRegistry::getRules($class, $instance);
+        $definitions = ValidationRegistry::rulesFor($class);
         
         $rules = []; // rules by property
         $structureErrors = [];
 
         foreach($definitions as $definition) {
             if($definition instanceof ObjectValidator) {
-                $property = $definition->propertyName;
+                $property = $definition->propertyName();
                 $nestedInstance = $instance->$property ?? null;
 
                 if ($nestedInstance === null) {
@@ -37,44 +69,49 @@ class ValidationHandler {
                 } elseif (!is_object($nestedInstance) || !is_a($nestedInstance, $definition->className)) {
                     $structureErrors[$property] = self::structureError($property, "$property must be an instance of {$definition->className}.", 'object.invalid', $flattenErrorToString);
                 } else {
-                    $rules[$property] = ValidationRegistry::getRules(get_class($nestedInstance), $nestedInstance);
+                    $rules[$property] = ValidationRegistry::rulesFor(get_class($nestedInstance));
                 }
 
                 continue;
             }
 
             if ($definition instanceof ObjectArrayValidator) {
-                $items = $instance->{$definition->propertyName} ?? null;
+                $property = $definition->propertyName();
+                $items = $instance->{$property} ?? null;
 
                 if ($items === null) {
                     if ($definition->requiredState())
-                        $structureErrors[$definition->propertyName] = self::structureError($definition->propertyName, "$definition->propertyName is required.", 'required', $flattenErrorToString);
+                        $structureErrors[$property] = self::structureError($property, "$property is required.", 'required', $flattenErrorToString);
                 } elseif (is_array($items)) {
                     $itemCount = count($items);
                     if ($definition->minItems() !== null && $itemCount < $definition->minItems())
-                        $structureErrors[$definition->propertyName] = self::structureError($definition->propertyName, "{$definition->propertyName} must contain at least {$definition->minItems()} items.", 'array.min', $flattenErrorToString);
+                        $structureErrors[$property] = self::structureError($property, "$property must contain at least {$definition->minItems()} items.", 'array.min', $flattenErrorToString);
                     elseif ($definition->maxItems() !== null && $itemCount > $definition->maxItems())
-                        $structureErrors[$definition->propertyName] = self::structureError($definition->propertyName, "{$definition->propertyName} can contain at most {$definition->maxItems()} items.", 'array.max', $flattenErrorToString);
+                        $structureErrors[$property] = self::structureError($property, "$property can contain at most {$definition->maxItems()} items.", 'array.max', $flattenErrorToString);
 
-                    $rules[$definition->propertyName] = [];
+                    $rules[$property] = [];
 
                     foreach ($items as $index => $item) {
                         if (is_object($item) && is_a($item, $definition->className)) {
-                            $rules[$definition->propertyName][$index] =
-                                ValidationRegistry::getRules(get_class($item), $item);
+                            $rules[$property][$index] =
+                                ValidationRegistry::rulesFor(get_class($item));
                         } else {
-                            if (!isset($structureErrors[$definition->propertyName]) || !is_array($structureErrors[$definition->propertyName])) {
-                                $structureErrors[$definition->propertyName] = [];
+                            if (!isset($structureErrors[$property]) || !is_array($structureErrors[$property])) {
+                                $structureErrors[$property] = [];
                             }
 
-                            $structureErrors[$definition->propertyName][$index] = self::structureError($definition->propertyName . '.' . $index, 'Invalid item -expected object.', 'object.invalid', $flattenErrorToString);
+                            $structureErrors[$property][$index] = self::structureError($property . '.' . $index, 'Invalid item -expected object.', 'object.invalid', $flattenErrorToString);
                         }
                     }
                 } else {
-                    $structureErrors[$definition->propertyName] = self::structureError($definition->propertyName, "$definition->propertyName must be an array.", 'array.invalid', $flattenErrorToString);
+                    $structureErrors[$property] = self::structureError($property, "$property must be an array.", 'array.invalid', $flattenErrorToString);
                 }
 
                 continue;
+            }
+
+            if (!$definition instanceof ValidatorBase) {
+                throw new InvalidArgumentException('Registered rules must expose a validator field.');
             }
 
             $rules[$definition->propertyName()] = $definition;

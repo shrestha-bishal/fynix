@@ -1,9 +1,11 @@
 <?php
+declare(strict_types=1);
+
 namespace Fynix;
 
 use Fynix\Validators\ValidatorBase;
 
-class ValidationError {
+final class ValidationError {
     public ?ValidatorBase $rule;
     public string $message;
     public string $field_name;

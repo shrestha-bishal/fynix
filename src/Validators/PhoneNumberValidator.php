@@ -1,16 +1,25 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
 
 class PhoneNumberValidator extends LengthValidatorBase
 {
-    public function __construct(
+    protected function __construct(
         string $name,
         string $propertyName)
     {
         parent::__construct($name, $propertyName);
-        $this->length(10, 12);
+        $this->minLength = 10;
+        $this->maxLength = 12;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     public function validate(mixed $fieldValue) : ?ValidationError

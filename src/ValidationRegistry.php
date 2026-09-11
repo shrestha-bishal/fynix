@@ -1,51 +1,48 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix;
 
+use Closure;
+use Fynix\Contracts\Validatable;
+use Fynix\Contracts\ValidatorRegistryInterface;
+use Fynix\Exceptions\UnknownClassException;
 use InvalidArgumentException;
 
-class ValidationRegistry {
-    /** @var array<class-string, callable> */
-    protected static array $registry = [];
+final class ValidationRegistry implements ValidatorRegistryInterface
+{
+    /** @var array<class-string, array<Validatable>> */
+    private static array $registry = [];
 
-    /**
-     * Register validation rules for a specific class.
-     *
-     * @param class-string $className
-     * @param callable $resolver
-     */
-    public static function register(string $className, callable $resolver): void {
-        if (!class_exists($className) && !interface_exists($className)) {
-            throw new InvalidArgumentException("Class or interface $className does not exist.");
+    /** @param Closure(RuleSet): array<Validatable> $ruleFactory */
+    public static function register(string $class, Closure $ruleFactory): void
+    {
+        if (!class_exists($class)) {
+            throw new UnknownClassException("Class or interface $class does not exist.");
         }
 
-        self::$registry[$className] = $resolver;
-    }
-    
-    /**
-     * Get registered validation rule resolver.
-     *
-     * @param class-string $className
-     * @return callable
-     */
-    public static function getResolver(string $className): callable {
-        if (!isset(self::$registry[$className])) {
-            throw new InvalidArgumentException("No validation rule registered for class $className.");
+        $rules = $ruleFactory(new RuleSet($class));
+        foreach ($rules as $rule) {
+            if (!$rule instanceof Validatable) {
+                throw new InvalidArgumentException('Rule factories must return only Validatable instances.');
+            }
         }
 
-        return self::$registry[$className];
+        self::$registry[$class] = $rules;
     }
 
-    /**
-     * @param class-string $className
-     * @return list<mixed>|array<string|int, mixed>
-     */
-    public static function getRules(string $className, object $instance) : array {
-        $resolver = ValidationRegistry::getResolver($className);
-        $rules = $resolver($instance);
-        return $rules;
+    /** @return array<Validatable> */
+    public static function rulesFor(string $class): array
+    {
+        if (!isset(self::$registry[$class])) {
+            throw new InvalidArgumentException("No validation rule registered for class $class.");
+        }
+
+        return self::$registry[$class];
     }
 
-    public static function clearCache() : void {
+    public static function clear(): void
+    {
         self::$registry = [];
     }
 }

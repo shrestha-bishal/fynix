@@ -29,7 +29,6 @@
     - ValidationHandler
     - ValidationRegistry
     - ValidationError
-    - [Fluent Rule Builder](#fluent-rule-builder)
     - [Rule Facade](#rule-facade)
 
 4. [Validator Classes](#validator-classes)
@@ -97,16 +96,18 @@
 
 13. [Migration to v2](#migration-to-v2)
 
-14. [Testing](#testing)
+14. [Migration to v3](#migration-to-v3)
 
-15. [Contributing](#contributing)
+15. [Testing](#testing)
+
+16. [Contributing](#contributing)
     - Forking & Branching
     - Committing
     - Running Tests
     - Pull Requests
     - Reporting Issues
 
-16. [Funding & Sponsorship](#funding--sponsorship)
+17. [Funding & Sponsorship](#funding--sponsorship)
     - [Support Options](#support-options)
       - GitHub Sponsors
       - Buy Me a Coffee
@@ -405,13 +406,12 @@ $validator = new StringValidator(
 
 Misspelled properties throw an `InvalidArgumentException` when the rule is created.
 
-### Fluent Rule Builder
-For larger DTOs, use `Rules::for()` to build a callable registry definition. Each property is added as its own rule, and each constraint applies to the most recently declared validator.
+### RuleSet Registry Definitions
+For DTO rules, use a static `ValidationRegistry` closure receiving a `RuleSet`. `RuleSet` delegates to `Rule::on()` and checks each property against the owning class.
 
 ```php
-use Fynix\Rules;
+use Fynix\RuleSet;
 use Fynix\ValidationRegistry;
-use function Fynix\nameof;
 
 class User
 {
@@ -424,74 +424,62 @@ class User
 
 ValidationRegistry::register(
     User::class,
-    Rules::for(User::class)
-        ->string(nameof(User::class, 'firstName'))->min(2)->max(50)
-        ->string(nameof(User::class, 'lastName'))->min(2)->max(50)
-        ->email(nameof(User::class, 'email'))->max(255)
-        ->number(nameof(User::class, 'age'))->min(18)->max(120)
-        ->password(nameof(User::class, 'password'))->min(8)->max(128)
-        ->rules()
+    static fn (RuleSet $rules): array => [
+        $rules->string('firstName')->min(2)->max(50),
+        $rules->string('lastName')->min(2)->max(50),
+        $rules->email('email')->max(255),
+        $rules->number('age')->min(18)->max(120),
+        $rules->password('password')->min(8)->max(128),
+    ]
 );
 ```
 
-If you only want the generated rules array without registering it immediately, you can still do this:
+Registry definitions remain static in v3. The old `Rules::for()` and `RuleBuilder` APIs were removed.
+
+If you only want the generated rules array without registering it immediately, use `Rule::on()` directly:
 
 ```php
-$rules = Rules::for(User::class)
-    ->string(nameof(User::class, 'firstName'))->min(2)->max(50)
-    ->string(nameof(User::class, 'lastName'))->min(2)->max(50)
-    ->email(nameof(User::class, 'email'))->max(255)
-    ->number(nameof(User::class, 'age'))->min(18)->max(120)
-    ->password(nameof(User::class, 'password'))->min(8)->max(128)
-    ->rules();
+$rules = [
+    Rule::on(User::class)->string('firstName')->min(2)->max(50),
+    Rule::on(User::class)->string('lastName')->min(2)->max(50),
+];
 ```
 
 This is the rule definition stage; actual validation still happens when you call `ValidationHandler::validate($user)` or use a validator directly.
 
 ### Rule Facade
-For a single field, `Rule` is the concise counterpart to `Rules::for()`. It provides static entry points for each validator while keeping the existing constructors available:
+`Rule` is the v3 entry point for standalone validators. `Rule::on()` is its class-scoped counterpart, and `RuleSet` is the registry-definition facade. Validator constructors are protected in v3; `Rule` and `ScopedRule` are the supported construction paths.
 
 ```php
 use Fynix\Rule;
-use Fynix\Validators\StringValidator;
 
 $bare = Rule::string('firstName');
-$checked = Rule::string(User::class, 'firstName');
-$explicit = new StringValidator('First Name', 'firstName');
+$checked = Rule::on(User::class)->string('firstName');
 ```
 
-The bare form uses the field name directly and derives its label automatically. The class-checked form validates that the property exists and then uses the property name as the field. This is additive sugar for single-field rules, not a replacement for `new StringValidator(...)`, `Rules::for()`, or any existing API.
+The bare form derives its label automatically. The scoped form validates the owner class and property using the exact `nameof()` messages, throwing typed rule-definition exceptions. This is the v3 construction API, replacing direct validator construction and `Rules::for()`.
 
 ### Direct Validation Without a Registry
 When you do not need object-level rule registration, you can validate a single value directly with a validator instance. This is useful for form fields, ad hoc checks, and isolated DTO members.
 
 ```php
-use Fynix\Rules;
+use Fynix\Rule;
 use Fynix\ValidationError;
-use Fynix\Validators\EmailValidator;
-use Fynix\Validators\NumberValidator;
-use Fynix\Validators\StringValidator;
-use function Fynix\nameof;
 
-// Builder pattern for a DTO/class rule set
-$rules = Rules::for(User::class)
-    ->string(nameof(User::class, 'firstName'))
-    ->min(2)
-    ->max(50)
-    ->rules();
+$rules = [Rule::on(User::class)->string('firstName')->min(2)->max(50)];
 
 // Single-field validation returning the first error
-$error = (new StringValidator('First Name', 'firstName'))
+$error = Rule::string('firstName')
     ->min(2)
     ->max(50)
     ->validateField('J');
 
 // Validate all applicable errors for a field
-$allErrors = (new EmailValidator('Email', 'email'))
+$allErrors = Rule::email('email')
     ->validateFieldAll('not-an-email');
 
 // Numeric range validation
-$ageErrors = (new NumberValidator('Age', 'age'))
+$ageErrors = Rule::number('age')
     ->min(18)
     ->max(99)
     ->validateFieldAll(16);
@@ -501,55 +489,41 @@ if ($error instanceof ValidationError) {
 }
 ```
 
-This approach is ideal when the validation rules are local to a form or request payload and do not need to be reused via `ValidationRegistry`. The builder still works for class-level DTO validation, but a single validator is the simplest option for isolated input checks.
+This approach is ideal when the validation rules are local to a form or request payload and do not need to be reused via `ValidationRegistry`.
 
 ### String Validation
 ```php
-use Fynix\Validators\StringValidator;
-
-$stringValidator = (new StringValidator('First Name', 'firstName'))->length(2, 50);
+$stringValidator = Rule::string('firstName')->length(2, 50);
 ```
 
 ### Email Validation
 ```php
-use Fynix\Validators\EmailValidator;
-
-$emailValidator = new EmailValidator('Email', 'email');
+$emailValidator = Rule::email('email');
 ```
 
 ### Number Validation
 ```php
-use Fynix\Validators\NumberValidator;
-
-$numberValidator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
+$numberValidator = Rule::number('age')->min(18)->max(99);
 ```
 
 ### Password Validation
 ```php
-use Fynix\Validators\PasswordValidator;
-
-$passwordValidator = (new PasswordValidator('Password', 'password'))->length(8, 30);
+$passwordValidator = Rule::password('password')->length(8, 30);
 ```
 
 ### Image Validation
 ```php
-use Fynix\Validators\ImageValidator;
-
-$imageValidator = (new ImageValidator('Profile Picture', 'profilePic'))->maxFileSizeMB(5);
+$imageValidator = Rule::image('profilePic')->maxFileSizeMB(5);
 ```
 
 ### Nested Object Validation
 ```php
-use Fynix\Validators\ObjectValidator;
-
-$objectValidator = new ObjectValidator('address', UserAddress::class);
+$objectValidator = Rule::object('address', UserAddress::class);
 ```
 
 ### Array of Objects Validation
 ```php
-use Fynix\Validators\ObjectArrayValidator;
-
-$objectArrayValidator = new ObjectArrayValidator('items', FreightItemDto::class);
+$objectArrayValidator = Rule::objectArray('items', FreightItemDto::class);
 ```
 
 ### Example: Full User Registration Validation
@@ -831,7 +805,82 @@ new StringValidator(
     ->max(50);
 ```
 
-Use `Rules::for()` for a complete DTO definition and `nameof()` to validate property names. Email username uniqueness is now handled by `UsernameValidator::uniqueUsing()` instead of `EmailValidator`.
+In v2, use `Rules::for()` for a complete DTO definition and `nameof()` to validate property names. Email username uniqueness is now handled by `UsernameValidator::uniqueUsing()` instead of `EmailValidator`.
+
+## Migration to v3
+
+Version 3 is a deliberate breaking release. Public validator constructors are removed and validators must be created through `Rule`, `ScopedRule`, or `RuleSet`.
+
+### Validator construction
+
+Before:
+
+```php
+new StringValidator('Name', 'name');
+```
+
+After:
+
+```php
+Rule::string('name');
+Rule::on(User::class)->string('name');
+```
+
+### `Rules::for()` removal
+
+The v2 `Rules::for()` and `RuleBuilder` APIs are removed entirely. Replace them with `Rule::on()` or a static `RuleSet` registry closure:
+
+```php
+// Before
+$rules = Rules::for(User::class)
+    ->string(nameof(User::class, 'name'))
+    ->min(2)
+    ->rules();
+
+// After
+$rules = [Rule::on(User::class)->string('name')->min(2)];
+```
+
+### Registry closures
+
+`ValidationRegistry` remains static. The closure argument changes from the DTO instance to `RuleSet`; instance-aware rule registration is not preserved:
+
+```php
+// Before
+ValidationRegistry::register(User::class, static fn(User $user): array => [
+    new StringValidator('Name', 'name'),
+]);
+
+// After
+ValidationRegistry::register(User::class, static fn(RuleSet $rules): array => [
+    $rules->string('name'),
+]);
+```
+
+### Immutable fluent methods
+
+Fluent methods return new instances in v3. Chaining is recommended:
+
+```php
+$validator = Rule::string('name')->min(2)->max(50);
+```
+
+Code that configured a validator across separate statements must reassign the result:
+
+```php
+$validator = Rule::string('name');
+$validator = $validator->min(2);
+```
+
+### Composable rules
+
+`AllOf`, `AnyOf`, and `Not` are composable rules, not validator classes. They are intentionally exempt from the protected-validator-constructor rule and may be constructed directly:
+
+```php
+$rule = new AllOf([Rule::string('name')->min(2), Rule::string('name')->max(50)]);
+$alternative = new AnyOf([Rule::email('contact'), Rule::phoneNumber('contact')]);
+$negated = new Not(Rule::string('status'), 'This status is not allowed.');
+```
 
 ---
 

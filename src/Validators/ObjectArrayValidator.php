@@ -1,16 +1,15 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
+
+use Fynix\ValidationError;
 
 /**
  * Class ObjectArrayValidator
  *
  * Validates a property that contains an array of objects, where each object is validated
  * using the registered rules for its class (e.g. DTOs with ValidationRegistry).
- *
- * Usage:
- * ```
- * new ObjectArrayValidator('items', FreightItemDto::class)
- * ```
  *
  * Requirements:
  * - The target property must be an array.
@@ -19,46 +18,38 @@ namespace Fynix\Validators;
  *
  * @package YourNamespace\Validators
  */
-class ObjectArrayValidator {
-    private ?int $minItems = null;
-    private ?int $maxItems = null;
-    private bool $isRequired = true;
+class ObjectArrayValidator extends ValidatorBase {
+    protected ?int $minItems = null;
+    protected ?int $maxItems = null;
 
-    public function __construct(
-        public string $propertyName,
-        public string $className) {}
+    public string $className;
+
+    protected function __construct(string $name, string $propertyName, string $className)
+    {
+        parent::__construct($name, $propertyName);
+        $this->className = $className;
+        $this->includeGenericValidation = false;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName, string $className): static
+    {
+        return new static($name, $propertyName, $className);
+    }
 
     public function min(int $items): static
     {
-        $this->minItems = $this->validateCount($items);
-        return $this;
+        return $this->with('minItems', $this->validateCount($items));
     }
 
     public function max(int $items): static
     {
-        $this->maxItems = $this->validateCount($items);
-        return $this;
+        return $this->with('maxItems', $this->validateCount($items));
     }
 
-    public function isRequired(bool $required = true): static
+    public function validate(mixed $fieldValue): ?ValidationError
     {
-        $this->isRequired = $required;
-        return $this;
-    }
-
-    public function required(bool $required = true): static
-    {
-        return $this->isRequired($required);
-    }
-
-    public function optional(): static
-    {
-        return $this->isRequired(false);
-    }
-
-    public function requiredState(): bool
-    {
-        return $this->isRequired;
+        return null;
     }
 
     public function minItems(): ?int

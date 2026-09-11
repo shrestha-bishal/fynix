@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 
 namespace Fynix;
 
+use Fynix\Exceptions\UnknownClassException;
 use Fynix\Validators\EmailValidator;
 use Fynix\Validators\ImageValidator;
 use Fynix\Validators\ImagesValidator;
@@ -15,66 +17,78 @@ use Fynix\Validators\UsernameValidator;
 
 final class Rule
 {
-    public static function string(string $fieldOrClass, ?string $propertyName = null): StringValidator
+    public static function on(string $ownerClass): ScopedRule
     {
-        return StringValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        self::assertClass($ownerClass);
+
+        return new ScopedRule($ownerClass);
     }
 
-    public static function number(string $fieldOrClass, ?string $propertyName = null): NumberValidator
+    public static function string(string $field): StringValidator
     {
-        return NumberValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return StringValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function email(string $fieldOrClass, ?string $propertyName = null): EmailValidator
+    public static function number(string $field): NumberValidator
     {
-        return EmailValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return NumberValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function phoneNumber(string $fieldOrClass, ?string $propertyName = null): PhoneNumberValidator
+    public static function email(string $field): EmailValidator
     {
-        return PhoneNumberValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return EmailValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function password(string $fieldOrClass, ?string $propertyName = null): PasswordValidator
+    public static function phoneNumber(string $field): PhoneNumberValidator
     {
-        return PasswordValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return PhoneNumberValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function image(string $fieldOrClass, ?string $propertyName = null): ImageValidator
+    public static function password(string $field): PasswordValidator
     {
-        return ImageValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return PasswordValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function images(string $fieldOrClass, ?string $propertyName = null): ImagesValidator
+    public static function image(string $field): ImageValidator
     {
-        return ImagesValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        return ImageValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function object(string $fieldOrClass, string $propertyOrTargetClass, ?string $targetClass = null): ObjectValidator
+    public static function images(string $field): ImagesValidator
     {
-        $field = self::resolveField($fieldOrClass, $targetClass === null ? null : $propertyOrTargetClass);
-        $targetClass ??= $propertyOrTargetClass;
-
-        return new ObjectValidator($field, $targetClass);
+        return ImagesValidator::__makeInternal(self::labelFor($field), $field);
     }
 
-    public static function objectArray(string $fieldOrClass, string $propertyOrTargetClass, ?string $targetClass = null): ObjectArrayValidator
+    public static function object(string $field, string $targetClass): ObjectValidator
     {
-        $field = self::resolveField($fieldOrClass, $targetClass === null ? null : $propertyOrTargetClass);
-        $targetClass ??= $propertyOrTargetClass;
+        self::assertClass($targetClass);
 
-        return new ObjectArrayValidator($field, $targetClass);
+        return ObjectValidator::__makeInternal(self::labelFor($field), $field, $targetClass);
     }
 
-    public static function username(string $fieldOrClass, ?string $propertyName = null): UsernameValidator
+    public static function objectArray(string $field, string $targetClass): ObjectArrayValidator
     {
-        return UsernameValidator::make(self::resolveField($fieldOrClass, $propertyName));
+        self::assertClass($targetClass);
+
+        return ObjectArrayValidator::__makeInternal(self::labelFor($field), $field, $targetClass);
     }
 
-    private static function resolveField(string $fieldOrClass, ?string $propertyName): string
+    public static function username(string $field): UsernameValidator
     {
-        return $propertyName === null
-            ? $fieldOrClass
-            : nameof($fieldOrClass, $propertyName);
+        return UsernameValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function labelFor(string $field): string
+    {
+        $label = preg_replace('/(?<=[a-z0-9])([A-Z])/', ' $1', str_replace('_', ' ', $field));
+
+        return ucwords($label ?? $field);
+    }
+
+    private static function assertClass(string $className): void
+    {
+        if (!class_exists($className)) {
+            throw new UnknownClassException("Class or interface $className does not exist.");
+        }
     }
 }

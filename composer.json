@@ -1,5 +1,6 @@
 {
     "name": "bishalshrestha/fynix",
+    "version": "3.0.0-dev",
     "description": "A modern, extensible PHP library for validating primitive data types, files, nested objects, and arrays of objects with reusable and centralized validation rules.",
     "type": "library",
     "license": "MIT",
@@ -35,11 +36,11 @@
     },
     "scripts": {
         "test": "phpunit",
-        "analyse": "phpstan analyse src --no-progress"
+        "analyse": "phpstan analyse --no-progress"
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "2.0-dev"
+            "dev-main": "3.0-dev"
         },
         "readme": "README.md",
         "funding": [

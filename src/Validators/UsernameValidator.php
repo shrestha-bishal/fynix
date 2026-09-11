@@ -1,4 +1,6 @@
 <?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
 use Fynix\ValidationError;
@@ -8,10 +10,17 @@ class UsernameValidator extends LengthValidatorBase
     /** @var callable(string): bool|null */
     private $existsChecker = null;
 
-    public function __construct(string $name, string $propertyName)
+    protected function __construct(string $name, string $propertyName)
     {
         parent::__construct($name, $propertyName);
-        $this->length(3, 30);
+        $this->minLength = 3;
+        $this->maxLength = 30;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     /**
@@ -20,8 +29,7 @@ class UsernameValidator extends LengthValidatorBase
      */
     public function uniqueUsing(callable $existsChecker): static
     {
-        $this->existsChecker = $existsChecker;
-        return $this;
+        return $this->with('existsChecker', $existsChecker);
     }
 
     public function validate(mixed $fieldValue): ?ValidationError

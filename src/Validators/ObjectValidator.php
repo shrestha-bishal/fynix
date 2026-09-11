@@ -1,41 +1,34 @@
-<?php 
+<?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
+
+use Fynix\ValidationError;
 
 /**
  * Class ObjectValidator
  *
  * Validates a nested object (e.g., a DTO) by resolving and invoking its registered validation logic.
  */
-class ObjectValidator {
+class ObjectValidator extends ValidatorBase {
 
-    private bool $isRequired = true;
+    public string $className;
 
-    /**
-     * @param string $propertyName The name of the property that holds the nested object.
-    * @param string $className The class name whose validator is registered in ValidationRegistry using register().
-     */
-    public function __construct(
-        public string $propertyName,
-        public string $className) {}
-
-    public function isRequired(bool $required = true): static
+    protected function __construct(string $name, string $propertyName, string $className)
     {
-        $this->isRequired = $required;
-        return $this;
+        parent::__construct($name, $propertyName);
+        $this->className = $className;
+        $this->includeGenericValidation = false;
     }
 
-    public function required(bool $required = true): static
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName, string $className): static
     {
-        return $this->isRequired($required);
+        return new static($name, $propertyName, $className);
     }
 
-    public function optional(): static
+    public function validate(mixed $fieldValue): ?ValidationError
     {
-        return $this->isRequired(false);
-    }
-
-    public function requiredState(): bool
-    {
-        return $this->isRequired;
+        return null;
     }
 }

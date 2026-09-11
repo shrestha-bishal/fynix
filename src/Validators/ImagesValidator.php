@@ -1,6 +1,9 @@
 <?php
+declare(strict_types=1);
+
 namespace Fynix\Validators;
 
+use Fynix\Rule;
 use Fynix\ValidationError;
 
 class ImagesValidator extends ValidatorBase {
@@ -14,28 +17,32 @@ class ImagesValidator extends ValidatorBase {
      * @param bool    $isRequired Whether the field is required. Defaults to true.
      */
 
-    private int $minImages = 1;
-    private int $maxImages = 1;
-    private int $maxFileSizeMB = 5;
+    protected int $minImages = 1;
+    protected int $maxImages = 1;
+    protected int $maxFileSizeMB = 5;
 
-    public function __construct(
+    protected function __construct(
         string $name, 
         string $propertyName)
     {
         parent::__construct($name, $propertyName);
-        $this->withoutGenericValidation();
+        $this->includeGenericValidation = false;
+    }
+
+    /** @internal */
+    public static function __makeInternal(string $name, string $propertyName): static
+    {
+        return new static($name, $propertyName);
     }
 
     public function min(int|float $value): static
     {
-        $this->minImages = $this->validateImageCount($value);
-        return $this;
+        return $this->with('minImages', $this->validateImageCount($value));
     }
 
     public function max(int|float $value): static
     {
-        $this->maxImages = $this->validateImageCount($value);
-        return $this;
+        return $this->with('maxImages', $this->validateImageCount($value));
     }
 
     public function maxFileSizeMB(int $megabytes): static
@@ -44,8 +51,7 @@ class ImagesValidator extends ValidatorBase {
             throw new \InvalidArgumentException('The maximum file size must be at least 1 MB.');
         }
 
-        $this->maxFileSizeMB = $megabytes;
-        return $this;
+        return $this->with('maxFileSizeMB', $megabytes);
     }
 
     private function validateImageCount(int|float $value): int
@@ -90,7 +96,7 @@ class ImagesValidator extends ValidatorBase {
                 'size' => $fieldValue['size'][$key]
             ];
 
-            $imageValidation = (new ImageValidator($name, $name))->maxFileSizeMB($this->maxFileSizeMB);
+            $imageValidation = Rule::image($name)->maxFileSizeMB($this->maxFileSizeMB);
             $error = $imageValidation->validate($fieldValueByIndex);
             
             if($error != null) 
