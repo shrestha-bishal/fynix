@@ -5,39 +5,58 @@ use Fynix\ValidationError;
 
 abstract class ValidatorBase 
 {
-    public string $name;
-    public string $propertyName;
-    public ?int $minLength = null;
-    public ?int $maxLength = null;
-    public bool $isRequired = true;
-    public $includeGenericValidation = true;
+    protected string $name;
+    protected string $propertyName;
+    protected ?int $minLength = null;
+    protected ?int $maxLength = null;
+    protected bool $isRequired = true;
+    protected bool $includeGenericValidation = true;
     
-    /**
-     * Constructor for initializing a validation rule.
-     * 
-     * @param string $name Name
-     * @param string $field_type The type of the field (e.g., 'string', 'number').
-     * @param string $field_name The name of the field to validate. (frontend name)
-     * @param int $min_length The minimum length of the field value.
-     * @param int $max_length The maximum length of the field value.
-     * @param string $msg An error message for the validation error.
-     * @param bool $is_required (Optional) Whether the field is required. Defaults to true.
-     */
-    function __construct(string $name, string $propertyName)
+    public function __construct(string $name, string $propertyName)
     {
         $this->name = ucfirst($name);
         $this->propertyName = $propertyName;
     }
 
-    public function required(bool $required = true): static
+    public function isRequired(bool $required = true): static
     {
         $this->isRequired = $required;
         return $this;
     }
 
+    public function required(bool $required = true): static
+    {
+        return $this->isRequired($required);
+    }
+
     public function optional(): static
     {
-        return $this->required(false);
+        return $this->isRequired(false);
+    }
+
+    public function requiredState(): bool
+    {
+        return $this->isRequired;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
+
+    public function propertyName(): string
+    {
+        return $this->propertyName;
+    }
+
+    public function minLength(): ?int
+    {
+        return $this->minLength;
+    }
+
+    public function maxLength(): ?int
+    {
+        return $this->maxLength;
     }
 
     public function genericValidation(bool $enabled = true): static
@@ -60,9 +79,20 @@ abstract class ValidatorBase
         return (int) $value;
     }
 
-    public function validateField($fieldValue) : ?ValidationError
+    public function validateField(mixed $fieldValue) : ?ValidationError
     {
-        $error = null;
+        return $this->validateFieldAll($fieldValue)[0] ?? null;
+    }
+
+    /**
+     * Validate a value and return every applicable error.
+     *
+     * The first-error validateField() method remains available for simple consumers.
+     */
+    /** @return list<ValidationError> */
+    public function validateFieldAll(mixed $fieldValue): array
+    {
+        $errors = [];
 
         if($this->includeGenericValidation) 
         {
@@ -71,82 +101,70 @@ abstract class ValidatorBase
 
             if ($fieldValue === null || $fieldValue === '') {
                 if ($this->isRequired)
-                    return new ValidationError($this, "$this->name is required.");
+                    return [new ValidationError($this, "$this->name is required.", 'required')];
 
-                return null;
+                return [];
             }
 
-            $error = $this->validateHTML($fieldValue);
-            if($error !== null) return $error;
-            
-            $error = $this->validateLength($fieldValue);
-            if($error !== null) return $error;
+            $errors = array_merge($errors, $this->validateHTML($fieldValue));
+            $errors = array_merge($errors, $this->validateLength($fieldValue));
         }
 
-        $error = $this->validate($fieldValue);
-        if($error !== null) return $error;
+        $errors = array_merge($errors, $this->validateAll($fieldValue));
 
-        return $error;
+        return $errors;
     }
 
     /**
      * Abstract method to perform validation on the field.
      * This method should be implemented in child classes to define the specific validation logic.
-     * @return ValidationError|null An object of ValidationError or null if no errors.
+    * @return ValidationError|null The first validation error, if any.
      */
-    abstract public function validate($fieldValue) : ?ValidationError;
+    abstract public function validate(mixed $fieldValue) : ?ValidationError;
 
-    /**
-     * Validates if the field value is null or empty.
-     * @param string $fieldValue The value of the field to validate.
-     * @return ValidationError|null An object of ValidationError or null if no errors.
-     */
-    private function validateNullable($fieldValue) : ?validationError
+    /** @return list<ValidationError> */
+    public function validateAll(mixed $fieldValue): array
     {
-        if (is_string($fieldValue))
-            $fieldValue = trim($fieldValue);
-
-        if(empty($fieldValue) || $fieldValue == null) {
-            return new ValidationError($this, "$this->name is required.");
-        }
-
-        return null;
+        $error = $this->validate($fieldValue);
+        return $error === null ? [] : [$error];
     }
 
     /**
      * Validates if the field value exceeds the maximum length.
      * @param string $fieldValue The value of the field to validate.
-     * @return ValidationError|null An object of ValidationError or null if no errors.
+    * @return ValidationError[] All length errors for the value.
      */
-    private function validateLength($fieldValue) : ?ValidationError
+    private function validateLength($fieldValue) : array
     {
         if($this->minLength == null || $this->maxLength == null)
-            return null;
+            return [];
     
         if (!is_scalar($fieldValue))
-            return null;
+            return [];
 
-        $stringLength = strlen((string) $fieldValue);
+        $stringLength = function_exists('mb_strlen')
+            ? mb_strlen((string) $fieldValue)
+            : strlen((string) $fieldValue);
 
-        if($stringLength < $this->minLength) 
-            return new ValidationError($this, "$this->name is too short. This field must be at least $this->minLength characters.");
+        if($stringLength < $this->minLength)
+            return [new ValidationError($this, "$this->name is too short. This field must be at least $this->minLength characters.", 'length.min', ['min' => $this->minLength])];
 
-        if($stringLength > $this->maxLength) 
-            return new ValidationError($this, "$this->name is too long. This field can only hold up to $this->maxLength characters.");
+        if($stringLength > $this->maxLength)
+            return [new ValidationError($this, "$this->name is too long. This field can only hold up to $this->maxLength characters.", 'length.max', ['max' => $this->maxLength])];
 
-        return null;
+        return [];
     }
 
     /**
      * Validates if the field value is a valid with no HTML tags.
      * @param string $fieldValue The value of the field to validate.
-     * @return ValidationError|null An object of ValidationError or null if no errors.
+    * @return ValidationError[] All HTML errors for the value.
      */
-    private function validateHTML($fieldValue) : ?ValidationError
+    private function validateHTML($fieldValue) : array
     {
         if(is_string($fieldValue) && preg_match('/<[^>]*>/', $fieldValue))
-            return new ValidationError($this, "$this->name cannot contain HTML tags.");
+            return [new ValidationError($this, "$this->name cannot contain HTML tags.", 'html.forbidden')];
         
-        return null;
+        return [];
     }
 }

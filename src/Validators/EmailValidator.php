@@ -6,16 +6,8 @@ use Fynix\ValidationError;
 class EmailValidator extends LengthValidatorBase
 {
     private bool $_isUsername = false;
+    private bool $_verifyDomain = false;
 
-    /**
-     * Constructor for the EmailValidation class.
-     *
-     * @param string $name The name of the validation.
-     * @param string $propertyName The name of the field to be validated.
-     * @param int $maxLength The maximum length of the number.
-     * @param int $minLength The minimum length of the number.
-     * @param bool $isRequired Whether the field is required or not. Default is true.
-     */
     public function __construct(
         string $name, 
         string $propertyName)
@@ -30,14 +22,20 @@ class EmailValidator extends LengthValidatorBase
         return $this;
     }
 
-    public function validate($fieldValue) : ?ValidationError
+    public function verifyDomain(bool $enabled = true): static
+    {
+        $this->_verifyDomain = $enabled;
+        return $this;
+    }
+
+    public function validate(mixed $fieldValue) : ?ValidationError
     {
         $error = null;
 
-        if (!filter_var($fieldValue, FILTER_VALIDATE_EMAIL))
-            return new ValidationError($this, "$this->name must be a valid email address.");
+        if (!is_string($fieldValue) || !filter_var($fieldValue, FILTER_VALIDATE_EMAIL))
+            return new ValidationError($this, "$this->name must be a valid email address.", 'email.invalid');
         
-        if (self::validateDNS($fieldValue) === false) // checking the dns records'
+        if ($this->_verifyDomain && self::validateDNS($fieldValue) === false)
             return new ValidationError($this, "The domain of the email address is invalid.");
 
         if (substr_count($fieldValue, '@') > 1) //counting '@'

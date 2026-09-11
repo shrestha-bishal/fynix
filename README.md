@@ -82,7 +82,6 @@
 
 10. [Extending the Library](#extending-the-library)
     - Creating Custom Validators
-    - Creating Custom Validators
 
 11. [Best Practices & Advanced Patterns](#best-practices--advanced-patterns)
     - Centralize Validation Logic
@@ -259,7 +258,7 @@ The library is organized into several core components:
 - **Fluent Configuration**: Validators configure their supported constraints through chainable methods such as `min()`, `max()`, `length()`, and `optional()`.
 - **ValidationHandler**: Orchestrates validation, supports batch and associative validation, and error normalization.
 - **ValidationRegistry**: Central registry for registering and retrieving validation rules for custom classes.
-- **ValidationError**: Standardized error object for all validators.
+- **ValidationError**: Standardized error object with a field, machine-readable code, message, and parameters.
 
 ## Validator Classes
 
@@ -267,13 +266,13 @@ The library is organized into several core components:
 |--------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | StringValidator          | Validates string type, length, nullability, and excludes HTML tags.                           | `length()`, `min()`, `max()`, `optional()`                                                  |
 | NumberValidator          | Validates numeric type and enforces min/max value constraints.                                | `min()`, `max()`, `length()`, `optional()`                                                   |
-| EmailValidator           | Validates email format, DNS, uniqueness, and structure.                                       | `length()`, `username()`, `optional()`                                                      |
+| EmailValidator           | Validates email format, optional DNS, uniqueness, and structure.                              | `length()`, `username()`, `verifyDomain()`, `optional()`                                     |
 | PhoneNumberValidator     | Validates phone number format, allowed symbols, and length.                                   | `length()`, `optional()`                                                                    |
 | PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | `length()`, `optional()`                                                                    |
 | ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | `maxFileSizeMB()`, `optional()`                                                             |
 | ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | `min()`, `max()`, `optional()`                                                              |
-| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | N/A                              | N/A                                                                                         |
-| ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | N/A                              | N/A     
+| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | `isRequired()`, `required()`, `optional()`                                                   |
+| ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | `min()`, `max()`, `isRequired()`, `optional()`                                                |
 
 ### ValidatorBase
 Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion) and requires child classes to implement `validate($fieldValue)` for specific logic.
@@ -291,9 +290,9 @@ $validator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
 ```
 
 ### EmailValidator
-Validates email format, DNS, uniqueness, and structure. Usage:
+Validates email format, optional DNS, uniqueness, and structure. Usage:
 ```php
-$validator = (new EmailValidator('Email', 'email'))->username();
+$validator = (new EmailValidator('Email', 'email'))->username()->verifyDomain();
 ```
 
 ### PhoneNumberValidator
@@ -334,7 +333,33 @@ $validator = new ObjectArrayValidator('items', FreightItemDto::class);
 
 ## Fluent Validator Configuration
 
-Validators are configured directly and return themselves from each supported method. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for a single image file, and `optional()` for nullable fields.
+Validators are configured directly and return themselves from each supported method. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for image files. Use `isRequired($condition)` when requiredness depends on application state; `required()` and `optional()` remain convenient aliases. Email domain checks are opt-in through `verifyDomain()` so validation does not require network access by default.
+
+### Structured Errors
+
+`ValidationHandler::validate()` returns messages by default. Pass `false` as the second argument to receive `ValidationError` objects:
+
+```php
+$errors = ValidationHandler::validate($user, false);
+
+foreach ($errors as $field => $error) {
+    foreach ((array) $error as $issue) {
+        echo $issue->code;
+        echo $issue->message;
+    }
+}
+```
+
+Each error also exposes `field_name`, `rule`, `parameters`, and `toArray()` for API responses.
+
+For all applicable errors on a single field, use `validateFieldAll()`:
+
+```php
+$errors = (new PasswordValidator('Password', 'password'))
+    ->validateFieldAll('abc');
+```
+
+`validateField()` remains available when an application only needs the first error.
 
 ## Validation Matrix
 
@@ -662,10 +687,10 @@ composer require bishalshrestha/fynix
 
 ## Testing
 
-Unit tests are provided using PHPUnit:
+PHPUnit tests are provided with the package:
 
 ```bash
-vendor/bin/phpunit tests/
+composer test
 ```
 
 ## Contributing

@@ -57,7 +57,7 @@ class ImagesValidator extends ValidatorBase {
         return (int) $value;
     }
 
-    public function validate($fieldValue) : ?ValidationError 
+    public function validate(mixed $fieldValue) : ?ValidationError
     {
         $error = null;
 

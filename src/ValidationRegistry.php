@@ -13,6 +13,7 @@ class ValidationRegistry {
      * @param class-string $className
      * @param callable(object): array $resolver
      */
+    /** @param callable $resolver */
     public static function register(string $className, callable $resolver) : void {
         self::$registry[$className] = $resolver;
     }
@@ -31,6 +32,7 @@ class ValidationRegistry {
         return self::$registry[$className];
     }
 
+    /** @return array<string|int, mixed> */
     public static function getRules(string $className, object $instance) : array {
         $resolver = ValidationRegistry::getResolver($className);
         $rules = $resolver($instance);
