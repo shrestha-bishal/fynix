@@ -5,6 +5,17 @@ namespace Fynix;
 
 use Fynix\Exceptions\UnknownClassException;
 use Fynix\Validators\EmailValidator;
+use Fynix\Validators\BooleanValidator;
+use Fynix\Validators\DateTimeValidator;
+use Fynix\Validators\ArrayValidator;
+use Fynix\Validators\UrlValidator;
+use Fynix\Validators\UuidValidator;
+use Fynix\Validators\IntegerValidator;
+use Fynix\Validators\DecimalValidator;
+use Fynix\Validators\EnumValidator;
+use Fynix\Validators\FileValidator;
+use Fynix\Validators\IpAddressValidator;
+use Fynix\Validators\RegexValidator;
 use Fynix\Validators\ImageValidator;
 use Fynix\Validators\ImagesValidator;
 use Fynix\Validators\NumberValidator;
@@ -27,6 +38,63 @@ final class Rule
     public static function string(string $field): StringValidator
     {
         return StringValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function boolean(string $field): BooleanValidator
+    {
+        return BooleanValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function dateTime(string $field): DateTimeValidator
+    {
+        return DateTimeValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function arrayOf(string $field): ArrayValidator
+    {
+        return ArrayValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function url(string $field): UrlValidator
+    {
+        return UrlValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function uuid(string $field): UuidValidator
+    {
+        return UuidValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function integer(string $field): IntegerValidator
+    {
+        return IntegerValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function decimal(string $field): DecimalValidator
+    {
+        return DecimalValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function enum(string $field, string $enumClass): EnumValidator
+    {
+        self::assertEnum($enumClass);
+
+        return EnumValidator::__makeInternal(self::labelFor($field), $field, $enumClass);
+    }
+
+    public static function file(string $field): FileValidator
+    {
+        return FileValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function ipAddress(string $field): IpAddressValidator
+    {
+        return IpAddressValidator::__makeInternal(self::labelFor($field), $field);
+    }
+
+    public static function regex(string $field, string $pattern): RegexValidator
+    {
+        return RegexValidator::__makeInternal(self::labelFor($field), $field, $pattern);
     }
 
     public static function number(string $field): NumberValidator
@@ -89,6 +157,13 @@ final class Rule
     {
         if (!class_exists($className)) {
             throw new UnknownClassException("Class or interface $className does not exist.");
+        }
+    }
+
+    private static function assertEnum(string $className): void
+    {
+        if (!enum_exists($className)) {
+            throw new UnknownClassException("Enum $className does not exist.");
         }
     }
 }
