@@ -12,11 +12,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added required/optional configuration for nested objects and object arrays.
 - Added conditional requiredness through `isRequired(bool)` with `requiredState()` for rule inspection.
 - Added all-errors validation through `validateFieldAll()` while preserving first-error `validateField()` compatibility.
+- Added `UsernameValidator` with injectable `uniqueUsing()` support for database-backed uniqueness checks.
 - Added PHPUnit coverage and the `composer test` script.
 
 ### Changed
 - Removed the validation options class hierarchy in favor of fluent validator configuration.
 - Email DNS verification is now opt-in through `verifyDomain()` and no longer requires network access by default.
+- Removed the misleading username/database stub from `EmailValidator`.
 - Image validation now checks the actual image file with `getimagesize()`.
 - Minimum supported PHP version is now 8.1.
 

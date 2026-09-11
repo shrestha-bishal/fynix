@@ -266,7 +266,8 @@ The library is organized into several core components:
 |--------------------------|-----------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------|
 | StringValidator          | Validates string type, length, nullability, and excludes HTML tags.                           | `length()`, `min()`, `max()`, `optional()`                                                  |
 | NumberValidator          | Validates numeric type and enforces min/max value constraints.                                | `min()`, `max()`, `length()`, `optional()`                                                   |
-| EmailValidator           | Validates email format, optional DNS, uniqueness, and structure.                              | `length()`, `username()`, `verifyDomain()`, `optional()`                                     |
+| EmailValidator           | Validates email format, optional DNS, and structure.                                          | `length()`, `verifyDomain()`, `optional()`                                                   |
+| UsernameValidator        | Validates username format and optional application-backed uniqueness.                         | `length()`, `uniqueUsing()`, `optional()`                                                    |
 | PhoneNumberValidator     | Validates phone number format, allowed symbols, and length.                                   | `length()`, `optional()`                                                                    |
 | PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | `length()`, `optional()`                                                                    |
 | ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | `maxFileSizeMB()`, `optional()`                                                             |
@@ -290,9 +291,18 @@ $validator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
 ```
 
 ### EmailValidator
-Validates email format, optional DNS, uniqueness, and structure. Usage:
+Validates email format, optional DNS, and structure. Usage:
 ```php
-$validator = (new EmailValidator('Email', 'email'))->username()->verifyDomain();
+$validator = (new EmailValidator('Email', 'email'))->verifyDomain();
+```
+
+### UsernameValidator
+Usernames can use an application-provided database or repository callback for uniqueness:
+```php
+use Fynix\Validators\UsernameValidator;
+
+$validator = (new UsernameValidator('Username', 'username'))
+    ->uniqueUsing(fn (string $username): bool => $userRepository->existsByUsername($username));
 ```
 
 ### PhoneNumberValidator
@@ -386,7 +396,7 @@ $stringValidator = (new StringValidator('First Name', 'firstName'))->length(2, 5
 ```php
 use Fynix\Validators\EmailValidator;
 
-$emailValidator = (new EmailValidator('Email', 'email'))->username();
+$emailValidator = new EmailValidator('Email', 'email');
 ```
 
 ### Number Validation
