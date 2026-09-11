@@ -4,7 +4,15 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
-## [3.0.0-dev] - 2026-09-11
+## [3.0.0] - 2026-09-11
+
+### Added
+
+- Added boolean, date-time, array, URL, UUID, integer, decimal, enum, file, IP address, and regex validators.
+- Added per-item array validation through `ArrayValidator::each()`.
+- Added generic `in()` and `notIn()` value constraints.
+- Added cross-field constraints: `sameAs()`, `differentFrom()`, `requiredIf()`, `requiredUnless()`, `prohibitedIf()`, and `prohibitedUnless()`.
+- Added Docker-based PHPUnit and PHPStan test execution.
 
 ### Breaking
 
@@ -13,6 +21,12 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Replaced instance-based registry closures with `RuleSet` factories.
 - Kept `ValidationRegistry` static; registry ownership and calls remain `ValidationRegistry::register(...)`.
 - Added typed rule-definition exceptions, composable rules, and validation listeners.
+
+### Fixed
+
+- Fixed validator factory signatures for PHP 8.5 compatibility.
+- Fixed fluent cloning for validators with subclass-specific state.
+- Added explicit `RuleSet` factories for all concrete validators.
 
 ## [2.0.0] - 2026-09-11
 
