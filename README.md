@@ -29,7 +29,7 @@
     - ValidationHandler
     - ValidationRegistry
     - ValidationError
-    - Rules builder
+    - [Fluent Rule Builder](#fluent-rule-builder)
 
 4. [Validator Classes](#validator-classes)
     - ValidatorBase
@@ -94,24 +94,26 @@
 
 12. [Installation](#installation)
 
-13. [Testing](#testing)
+13. [Migration to v2](#migration-to-v2)
 
-14. [Contributing](#contributing)
+14. [Testing](#testing)
+
+15. [Contributing](#contributing)
     - Forking & Branching
     - Committing
     - Running Tests
     - Pull Requests
     - Reporting Issues
 
-15. [Funding & Sponsorship](#funding--sponsorship)
+16. [Funding & Sponsorship](#funding--sponsorship)
     - [Support Options](#support-options)
       - GitHub Sponsors
       - Buy Me a Coffee
       - Thanks.dev
 
-16. [License](#license)
+17. [License](#license)
 
-17. [Author](#author)
+18. [Author](#author)
     - GitHub Profile
     - Repository
     - Website
@@ -403,22 +405,88 @@ $validator = new StringValidator(
 Misspelled properties throw an `InvalidArgumentException` when the rule is created.
 
 ### Fluent Rule Builder
-For larger DTOs, use `Rules::for()` to build a callable registry definition:
+For larger DTOs, use `Rules::for()` to build a callable registry definition. Each property is added as its own rule, and each constraint applies to the most recently declared validator.
+
 ```php
 use Fynix\Rules;
+use Fynix\ValidationRegistry;
 use function Fynix\nameof;
+
+class User
+{
+    public string $firstName = '';
+    public string $lastName = '';
+    public string $email = '';
+    public int $age = 0;
+    public string $password = '';
+}
 
 ValidationRegistry::register(
     User::class,
     Rules::for(User::class)
-        ->string(nameof(User::class, 'firstName'))
-        ->min(2)
-        ->max(50)
-        ->email(nameof(User::class, 'email'))
+        ->string(nameof(User::class, 'firstName'))->min(2)->max(50)
+        ->string(nameof(User::class, 'lastName'))->min(2)->max(50)
+        ->email(nameof(User::class, 'email'))->max(255)
+        ->number(nameof(User::class, 'age'))->min(18)->max(120)
+        ->password(nameof(User::class, 'password'))->min(8)->max(128)
+        ->rules()
 );
 ```
 
-Each constraint applies to the most recently declared rule. The builder validates every property through `nameof()` when the rule is defined.
+If you only want the generated rules array without registering it immediately, you can still do this:
+
+```php
+$rules = Rules::for(User::class)
+    ->string(nameof(User::class, 'firstName'))->min(2)->max(50)
+    ->string(nameof(User::class, 'lastName'))->min(2)->max(50)
+    ->email(nameof(User::class, 'email'))->max(255)
+    ->number(nameof(User::class, 'age'))->min(18)->max(120)
+    ->password(nameof(User::class, 'password'))->min(8)->max(128)
+    ->rules();
+```
+
+This is the rule definition stage; actual validation still happens when you call `ValidationHandler::validate($user)` or use a validator directly.
+
+### Direct Validation Without a Registry
+When you do not need object-level rule registration, you can validate a single value directly with a validator instance. This is useful for form fields, ad hoc checks, and isolated DTO members.
+
+```php
+use Fynix\Rules;
+use Fynix\ValidationError;
+use Fynix\Validators\EmailValidator;
+use Fynix\Validators\NumberValidator;
+use Fynix\Validators\StringValidator;
+use function Fynix\nameof;
+
+// Builder pattern for a DTO/class rule set
+$rules = Rules::for(User::class)
+    ->string(nameof(User::class, 'firstName'))
+    ->min(2)
+    ->max(50)
+    ->rules();
+
+// Single-field validation returning the first error
+$error = (new StringValidator('First Name', 'firstName'))
+    ->min(2)
+    ->max(50)
+    ->validateField('J');
+
+// Validate all applicable errors for a field
+$allErrors = (new EmailValidator('Email', 'email'))
+    ->validateFieldAll('not-an-email');
+
+// Numeric range validation
+$ageErrors = (new NumberValidator('Age', 'age'))
+    ->min(18)
+    ->max(99)
+    ->validateFieldAll(16);
+
+if ($error instanceof ValidationError) {
+    echo $error->message;
+}
+```
+
+This approach is ideal when the validation rules are local to a form or request payload and do not need to be reused via `ValidationRegistry`. The builder still works for class-level DTO validation, but a single validator is the simplest option for isolated input checks.
 
 ### String Validation
 ```php
@@ -730,6 +798,28 @@ composer require bishalshrestha/fynix
 ```
 --- 
 
+## Migration to v2
+
+Validation option classes were removed in v2. Configure validators directly with fluent methods:
+
+```php
+// v1
+new StringValidator(
+    'Name',
+    'name',
+    new StringValidationOptions(['min' => 2, 'max' => 50])
+);
+
+// v2
+(new StringValidator('Name', 'name'))
+    ->min(2)
+    ->max(50);
+```
+
+Use `Rules::for()` for a complete DTO definition and `nameof()` to validate property names. Email username uniqueness is now handled by `UsernameValidator::uniqueUsing()` instead of `EmailValidator`.
+
+---
+
 ## Testing
 
 PHPUnit tests are provided with the package:
@@ -777,7 +867,7 @@ This project is licensed under the [MIT License](./LICENSE).
 
 [![GitHub](https://img.shields.io/badge/GitHub-Profile-black?logo=github)](https://github.com/shrestha-bishal)  
 [![Repo](https://img.shields.io/badge/Repository-GitHub-black?logo=github)](https://github.com/shrestha-bishal/fynix)  
-[Website](https://fynixphp.netlify.app) *(coming soon)*  
+[Website](https://fynixphp.netlify.app)
 
 © 2025 Bishal Shrestha, All rights reserved  
 

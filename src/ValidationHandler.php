@@ -18,7 +18,7 @@ class ValidationHandler {
      * @param object $instance
      * @return array
      */
-    /** @return array<string, mixed> */
+    /** @return array<string|int, mixed> */
     public static function validate(object $instance, bool $flattenErrorToString = true) : array {
         $class = get_class($instance);
         $definitions = ValidationRegistry::getRules($class, $instance);
@@ -63,6 +63,10 @@ class ValidationHandler {
                             $rules[$definition->propertyName][$index] =
                                 ValidationRegistry::getRules(get_class($item), $item);
                         } else {
+                            if (!isset($structureErrors[$definition->propertyName]) || !is_array($structureErrors[$definition->propertyName])) {
+                                $structureErrors[$definition->propertyName] = [];
+                            }
+
                             $structureErrors[$definition->propertyName][$index] = self::structureError($definition->propertyName . '.' . $index, 'Invalid item — expected object.', 'object.invalid', $flattenErrorToString);
                         }
                     }
@@ -81,16 +85,16 @@ class ValidationHandler {
     }
 
     /**
-     * @param array<string, mixed> $structureErrors
-     * @param array<string, mixed> $validationErrors
-     * @return array<string, mixed>
+     * @param array<array-key, mixed> $structureErrors
+     * @param array<array-key, mixed> $validationErrors
+     * @return array<array-key, mixed>
      */
     private static function mergeErrors(array $structureErrors, array $validationErrors): array
     {
         foreach ($validationErrors as $key => $value) {
             if (isset($structureErrors[$key]) && is_array($structureErrors[$key]) && is_array($value)) {
                 $structureErrors[$key] = self::mergeErrors($structureErrors[$key], $value);
-            } elseif (!isset($structureErrors[$key])) {
+            } elseif (!array_key_exists($key, $structureErrors)) {
                 $structureErrors[$key] = $value;
             }
         }
@@ -103,7 +107,7 @@ class ValidationHandler {
         return $flatten ? $message : ValidationError::forField($field, $message, $code);
     }
 
-    /** @return list<array<string, mixed>> */
+    /** @return list<array<string|int, mixed>> */
     public static function validateMany(object ...$instances): array {
         $errors = [];
 
@@ -116,7 +120,7 @@ class ValidationHandler {
 
     /**
      * @param array<array-key, object> $instances
-     * @return array<array-key, array<string, mixed>>
+     * @return array<array-key, array<string|int, mixed>>
      */
     public static function validateManyAssoc(array $instances, bool $flattenErrorToString = true) : array {
         $errors = [];
