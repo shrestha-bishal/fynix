@@ -304,8 +304,8 @@ The library is organized into several core components:
 | PasswordValidator        | Enforces password strength: uppercase, lowercase, number, special character, length.          | `length()`, `optional()`                                                                    |
 | ImageValidator           | Validates a single image file: size, extension, and actual image content.                     | `maxFileSizeMB()`, `optional()`                                                             |
 | ImagesValidator          | Validates an array of image files, each using ImageValidator.                                 | `min()`, `max()`, `optional()`                                                              |
-| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | `isRequired()`, `required()`, `optional()`                                                   |
-| ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | `min()`, `max()`, `isRequired()`, `optional()`                                                |
+| ObjectValidator          | Validates a nested object property using registered rules for its class.                      | `required()`, `optional()`                                                                   |
+| ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | `min()`, `max()`, `required()`, `optional()`                                                  |
 
 ### ValidatorBase
 Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion, allowed/disallowed values, and cross-field constraints) and requires child classes to implement `validate($fieldValue)` for specific logic.
@@ -390,7 +390,7 @@ $validator = Rule::objectArray('items', FreightItemDto::class);
 
 ## Fluent Validator Configuration
 
-Validators are configured through immutable fluent methods. Each method returns a new validator instance. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for image files. Use `isRequired($condition)` when requiredness depends on application state; `required()` and `optional()` remain convenient aliases. Email domain checks are opt-in through `verifyDomain()` so validation does not require network access by default.
+Validators are configured through immutable fluent methods. Each method returns a new validator instance. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for image files. Use `required()` and `optional()` for unconditional requiredness, and `requiredIf()` or `requiredUnless()` for conditions based on another property. Email domain checks are opt-in through `verifyDomain()` so validation does not require network access by default.
 
 ### Structured Errors
 
