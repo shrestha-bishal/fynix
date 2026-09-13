@@ -41,8 +41,9 @@ class ObjectArrayValidator extends ValidatorBase {
         return $this->with('maxItems', $this->validateCount($items));
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return null;
     }
 

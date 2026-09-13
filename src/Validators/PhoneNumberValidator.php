@@ -16,8 +16,9 @@ class PhoneNumberValidator extends LengthValidatorBase
         $this->maxLength = 12;
     }
 
-    public function validate(mixed $fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue = null) : ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (!is_string($fieldValue))
             return new ValidationError($this, "$this->name must be a phone number.", 'phone.invalid');
 

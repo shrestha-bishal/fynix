@@ -26,8 +26,9 @@ class UsernameValidator extends LengthValidatorBase
         return $this->with('existsChecker', $existsChecker);
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (!is_string($fieldValue))
             return new ValidationError($this, "$this->name must be a string.", 'username.invalid');
 

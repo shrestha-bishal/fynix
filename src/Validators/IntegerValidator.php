@@ -25,8 +25,9 @@ class IntegerValidator extends ValidatorBase
         return $this->with('maxValue', $value);
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (!is_int($fieldValue)) {
             return new ValidationError($this, "$this->name must be an integer.", 'integer.invalid');
         }

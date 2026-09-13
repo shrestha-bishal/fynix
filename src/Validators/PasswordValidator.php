@@ -16,8 +16,9 @@ class PasswordValidator extends LengthValidatorBase
         $this->maxLength = 30;
     }
 
-    public function validate(mixed $fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue = null) : ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return $this->validateAll($fieldValue)[0] ?? null;
     }
 
