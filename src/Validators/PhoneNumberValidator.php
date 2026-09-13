@@ -26,10 +26,10 @@ class PhoneNumberValidator extends LengthValidatorBase
         $error = null;
         
         if (!is_numeric($sanitisedValue))
-            return new ValidationError($this, "$this->name must be a number.");
+            return new ValidationError($this, "$this->name must be a number.", 'phone.invalid');
 
         if (!self::validatePattern($fieldValue))
-            return new ValidationError($this, "$this->name must only contain numbers, spaces, dashes, or plus signs.");
+            return new ValidationError($this, "$this->name must only contain numbers, spaces, dashes, or plus signs.", 'phone.invalid');
         
         return $error;
     }
