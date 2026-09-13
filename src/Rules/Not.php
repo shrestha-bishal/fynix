@@ -17,9 +17,7 @@ final class Not implements Validatable
 
     public function validate(mixed $value): ?ValidationError
     {
-        $error = $this->rule instanceof ValidatorBase
-            ? $this->rule->validateField($value)
-            : $this->rule->validate($value);
+        $error = $this->rule->validate($value);
 
         if ($error !== null) {
             return null;

@@ -19,9 +19,7 @@ final class AnyOf implements Validatable
         $firstError = null;
 
         foreach ($this->rules as $rule) {
-            $error = $rule instanceof ValidatorBase
-                ? $rule->validateField($value)
-                : $rule->validate($value);
+            $error = $rule->validate($value);
             if ($error === null) {
                 return null;
             }

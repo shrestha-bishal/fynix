@@ -129,7 +129,7 @@ class Validator
 
         $field = $rule->propertyName();
         $fieldValue = isset($data->{$field}) ? $data->{$field} : null;
-        $validations = $rule->validateFieldAll($fieldValue, $data);
+        $validations = $rule->validateAll($fieldValue, $data);
 
         if(!empty($validations)) {
           if ($flattenToString) {

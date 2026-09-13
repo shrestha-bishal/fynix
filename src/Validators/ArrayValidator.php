@@ -34,11 +34,11 @@ class ArrayValidator extends ValidatorBase
 
     protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        return $this->validateAll($fieldValue)[0] ?? null;
+        return $this->validateValueAll($fieldValue)[0] ?? null;
     }
 
     /** @return list<ValidationError> */
-    public function validateAll(mixed $fieldValue): array
+    protected function validateValueAll(mixed $fieldValue): array
     {
         if (($fieldValue === null || $fieldValue === '') && !$this->isRequired) {
             return [];
@@ -63,7 +63,7 @@ class ArrayValidator extends ValidatorBase
 
         $errors = [];
         foreach ($fieldValue as $index => $item) {
-            foreach ($this->itemValidator->validateFieldAll($item) as $error) {
+            foreach ($this->itemValidator->validateAll($item) as $error) {
                 $errors[] = ValidationError::forField(
                     $this->propertyName . '.' . $index,
                     $error->message,
