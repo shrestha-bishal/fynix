@@ -394,10 +394,17 @@ Validators are configured through immutable fluent methods. Each method returns 
 
 ### Structured Errors
 
-`ValidationHandler::validate()` returns messages by default. Pass `flattenErrorToString: false` to receive `ValidationError` objects:
+`ValidationHandler::validate()` returns messages by default. Pass `flattenErrorToString: false` to receive `ValidationError` objects, and pass `rules:` when you want to validate an object with an explicit rule list instead of the registry:
 
 ```php
-$errors = ValidationHandler::validate($user, flattenErrorToString: false);
+$errors = ValidationHandler::validate(
+    $user,
+    rules: [
+        Rule::on(User::class)->string('firstName')->min(2)->max(50),
+        Rule::on(User::class)->email('email'),
+    ],
+    flattenErrorToString: false
+);
 
 foreach ($errors as $field => $error) {
     foreach ((array) $error as $issue) {
@@ -550,6 +557,18 @@ if ($error instanceof ValidationError) {
 ```
 
 This approach is ideal when the validation rules are local to a form or request payload and do not need to be reused via `ValidationRegistry`.
+
+For an object-owned rules array without registering globally, pass the rules explicitly to the handler:
+
+```php
+$errors = ValidationHandler::validate(
+    $user,
+    rules: [
+        Rule::on(User::class)->string('firstName')->min(2)->max(50),
+        Rule::on(User::class)->email('email'),
+    ]
+);
+```
 
 ### String Validation
 ```php
