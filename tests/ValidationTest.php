@@ -72,7 +72,7 @@ final class ValidationTest extends TestCase
         self::assertNull(Rule::arrayOf('tags')->min(1)->validate(['php']));
         self::assertCount(
             1,
-            Rule::arrayOf('tags')->each(Rule::string('tag'))->validateFieldAll(['php', ''])
+            Rule::arrayOf('tags')->each(Rule::string('tag'))->validateAll(['php', ''])
         );
         self::assertNull(Rule::url('website')->validate('https://example.com'));
         self::assertNull(Rule::uuid('id')->validate('550e8400-e29b-41d4-a716-446655440000'));
@@ -106,7 +106,7 @@ final class ValidationTest extends TestCase
         self::assertSame('array.min', Rule::arrayOf('tags')->min(2)->validate([])?->code);
         self::assertSame('array.max', Rule::arrayOf('tags')->max(1)->validate(['a', 'b'])?->code);
 
-        $errors = Rule::arrayOf('tags')->each(Rule::string('item'))->validateFieldAll(['valid', 123]);
+        $errors = Rule::arrayOf('tags')->each(Rule::string('item'))->validateAll(['valid', 123]);
 
         self::assertCount(1, $errors);
         self::assertSame('tags.1', $errors[0]->field_name);
@@ -289,19 +289,19 @@ final class ValidationTest extends TestCase
         self::assertSame(10, $validator->maxLength());
         self::assertFalse($validator->requiredState());
         self::assertTrue(Rule::string('name')->required()->requiredState());
-        self::assertNull($validator->validateField(null));
-        self::assertNotNull($validator->validateField('ab'));
-        self::assertNull($validator->validateField('Bishal'));
+        self::assertNull($validator->validate(null));
+        self::assertNotNull($validator->validate('ab'));
+        self::assertNull($validator->validate('Bishal'));
         self::assertSame('length.min', Rule::string('name')->min(2)->validate('A')?->code);
     }
 
     public function testGenericValueSetRulesUseStrictComparison(): void
     {
-        self::assertNull(Rule::string('role')->in(['admin', 'editor'])->validateField('admin'));
-        self::assertNotNull(Rule::string('role')->in(['admin', 'editor'])->validateField('owner'));
-        self::assertNull(Rule::number('age')->notIn([0, 1])->validateField(18));
-        self::assertNotNull(Rule::number('age')->notIn([18])->validateField(18));
-        self::assertNotNull(Rule::number('age')->in(['18'])->validateField(18));
+        self::assertNull(Rule::string('role')->in(['admin', 'editor'])->validate('admin'));
+        self::assertNotNull(Rule::string('role')->in(['admin', 'editor'])->validate('owner'));
+        self::assertNull(Rule::number('age')->notIn([0, 1])->validate(18));
+        self::assertNotNull(Rule::number('age')->notIn([18])->validate(18));
+        self::assertNotNull(Rule::number('age')->in(['18'])->validate(18));
     }
 
     public function testCrossFieldAndConditionalRulesUseTheOwningObject(): void

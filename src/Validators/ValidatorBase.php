@@ -61,19 +61,9 @@ abstract class ValidatorBase implements Validatable
         return $this->with('boundObject', $owner);
     }
 
-    final public function validate(mixed $fieldValue = null): ?ValidationError
+    final public function validate(mixed $fieldValue = null, ?object $data = null): ?ValidationError
     {
-        if ($this->boundObject !== null) {
-            if (!$this->supportsBoundValidation) {
-                throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
-            }
-
-            $fieldValue = $this->boundObject->{$this->propertyName} ?? null;
-
-            return $this->validateField($fieldValue, $this->boundObject);
-        }
-
-        return $this->validateField($fieldValue);
+        return $this->validateAll($fieldValue, $data)[0] ?? null;
     }
 
     public function label(string $label): static
@@ -193,19 +183,18 @@ abstract class ValidatorBase implements Validatable
         return (int) $value;
     }
 
-    public function validateField(mixed $fieldValue, ?object $data = null) : ?ValidationError
-    {
-        return $this->validateFieldAll($fieldValue, $data)[0] ?? null;
-    }
-
-    /**
-     * Validate a value and return every applicable error.
-     *
-     * The first-error validateField() method remains available for simple consumers.
-     */
     /** @return list<ValidationError> */
-    public function validateFieldAll(mixed $fieldValue, ?object $data = null): array
+    final public function validateAll(mixed $fieldValue = null, ?object $data = null): array
     {
+        if ($this->boundObject !== null) {
+            if (!$this->supportsBoundValidation) {
+                throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
+            }
+
+            $fieldValue = $this->boundObject->{$this->propertyName} ?? null;
+            $data = $this->boundObject;
+        }
+
         /** @var list<ValidationError> $errors */
         $errors = [];
 
@@ -230,7 +219,7 @@ abstract class ValidatorBase implements Validatable
             $errors = [...$errors, ...$this->validateLength($fieldValue)];
         }
 
-        $errors = [...$errors, ...$this->validateAll($fieldValue)];
+        $errors = [...$errors, ...$this->validateValueAll($fieldValue)];
 
         if (empty($errors)) {
             $errors = [...$errors, ...$this->validateValueSet($fieldValue)];
@@ -248,7 +237,7 @@ abstract class ValidatorBase implements Validatable
     abstract protected function validateValue(mixed $fieldValue): ?ValidationError;
 
     /** @return list<ValidationError> */
-    public function validateAll(mixed $fieldValue): array
+    protected function validateValueAll(mixed $fieldValue): array
     {
         $error = $this->validateValue($fieldValue);
         return $error === null ? [] : [$error];

@@ -17,9 +17,7 @@ final class AllOf implements Validatable
     public function validate(mixed $value): ?ValidationError
     {
         foreach ($this->rules as $rule) {
-            $error = $rule instanceof ValidatorBase
-                ? $rule->validateField($value)
-                : $rule->validate($value);
+            $error = $rule->validate($value);
             if ($error !== null) {
                 return $error;
             }

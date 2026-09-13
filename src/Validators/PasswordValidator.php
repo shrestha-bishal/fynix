@@ -18,11 +18,11 @@ class PasswordValidator extends LengthValidatorBase
 
     protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        return $this->validateAll($fieldValue)[0] ?? null;
+        return $this->validateValueAll($fieldValue)[0] ?? null;
     }
 
     /** @return list<ValidationError> */
-    public function validateAll(mixed $fieldValue): array
+    protected function validateValueAll(mixed $fieldValue): array
     {
         if (!is_string($fieldValue))
             return [new ValidationError($this, "$this->name must be a string.", 'password.invalid')];
