@@ -43,7 +43,10 @@ class ObjectArrayValidator extends ValidatorBase {
 
     public function validate(mixed $fieldValue = null): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
+        if ($this->boundObject !== null) {
+            throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
+        }
+
         return null;
     }
 
