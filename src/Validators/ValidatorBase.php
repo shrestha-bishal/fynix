@@ -81,19 +81,14 @@ abstract class ValidatorBase implements Validatable
         return $this->with('name', $label);
     }
 
-    public function isRequired(bool $required = true): static
+    public function required(bool $required = true): static
     {
         return $this->with('isRequired', $required);
     }
 
-    public function required(bool $required = true): static
-    {
-        return $this->isRequired($required);
-    }
-
     public function optional(): static
     {
-        return $this->isRequired(false);
+        return $this->required(false);
     }
 
     public function requiredState(): bool

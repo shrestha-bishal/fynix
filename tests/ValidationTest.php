@@ -268,6 +268,7 @@ final class ValidationTest extends TestCase
         self::assertSame(3, $validator->minLength());
         self::assertSame(10, $validator->maxLength());
         self::assertFalse($validator->requiredState());
+        self::assertTrue(Rule::string('name')->required()->requiredState());
         self::assertNull($validator->validateField(null));
         self::assertNotNull($validator->validateField('ab'));
         self::assertNull($validator->validateField('Bishal'));
