@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Fynix\Validators;
 
+use Fynix\Contracts\NestedValidator;
 use Fynix\ValidationError;
 
 /**
@@ -18,7 +19,7 @@ use Fynix\ValidationError;
  *
  * @package YourNamespace\Validators
  */
-class ObjectArrayValidator extends ValidatorBase {
+class ObjectArrayValidator extends ValidatorBase implements NestedValidator {
     protected ?int $minItems = null;
     protected ?int $maxItems = null;
 
@@ -55,6 +56,26 @@ class ObjectArrayValidator extends ValidatorBase {
     public function maxItems(): ?int
     {
         return $this->maxItems;
+    }
+
+    public function targetClass(): string
+    {
+        return $this->className;
+    }
+
+    public function isCollection(): bool
+    {
+        return true;
+    }
+
+    public function accepts(mixed $value): bool
+    {
+        return is_array($value);
+    }
+
+    public function acceptsItem(mixed $value): bool
+    {
+        return is_object($value) && is_a($value, $this->className);
     }
 
     private function validateCount(int $items): int
