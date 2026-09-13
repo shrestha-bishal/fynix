@@ -394,10 +394,10 @@ Validators are configured through immutable fluent methods. Each method returns 
 
 ### Structured Errors
 
-`ValidationHandler::validate()` returns messages by default. Pass `false` as the second argument to receive `ValidationError` objects:
+`ValidationHandler::validate()` returns messages by default. Pass `flattenErrorToString: false` to receive `ValidationError` objects:
 
 ```php
-$errors = ValidationHandler::validate($user, false);
+$errors = ValidationHandler::validate($user, flattenErrorToString: false);
 
 foreach ($errors as $field => $error) {
     foreach ((array) $error as $issue) {
