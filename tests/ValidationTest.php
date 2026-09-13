@@ -99,6 +99,20 @@ final class ValidationTest extends TestCase
         self::assertSame('First Name', $validator->name());
     }
 
+    public function testObjectBoundRulesValidateWithoutPassingTheFieldValue(): void
+    {
+        $user = new User();
+        $user->name = 'A';
+
+        $error = Rule::for($user)->string('name')->min(2)->max(30)->validate();
+
+        self::assertNotNull($error);
+        self::assertSame('length.min', $error->code);
+
+        $user->name = 'Bishal';
+        self::assertNull(Rule::for($user)->string('name')->min(2)->max(30)->validate());
+    }
+
     public function testScopedRuleThrowsTypedDefinitionExceptions(): void
     {
         try {
@@ -312,6 +326,7 @@ final class TestListener implements ValidationListener
 final class User
 {
     public string $firstName = '';
+    public string $name = '';
 }
 
 final class Address

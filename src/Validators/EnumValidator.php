@@ -15,8 +15,9 @@ class EnumValidator extends ValidatorBase
         $this->enumClass = $enumClass;
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if ($fieldValue instanceof $this->enumClass) {
             return null;
         }

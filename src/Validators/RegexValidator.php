@@ -19,8 +19,9 @@ class RegexValidator extends ValidatorBase
         $this->pattern = $pattern;
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return is_string($fieldValue) && preg_match($this->pattern, $fieldValue) === 1
             ? null
             : new ValidationError($this, "$this->name has an invalid format.", 'regex.invalid');

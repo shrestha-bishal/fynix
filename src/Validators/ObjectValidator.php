@@ -21,8 +21,9 @@ class ObjectValidator extends ValidatorBase {
         $this->includeGenericValidation = false;
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return null;
     }
 }

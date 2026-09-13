@@ -35,6 +35,11 @@ final class Rule
         return new ScopedRule($ownerClass);
     }
 
+    public static function for(object $instance): ScopedRule
+    {
+        return new ScopedRule($instance);
+    }
+
     public static function string(string $field): StringValidator
     {
         return StringValidator::__makeInternal(self::labelFor($field), $field);

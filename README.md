@@ -29,13 +29,23 @@
     - ValidationHandler
     - ValidationRegistry
     - ValidationError
-    - [Rule Facade](#rule-facade)
 
 4. [Validator Classes](#validator-classes)
     - ValidatorBase
     - StringValidator
+    - BooleanValidator
     - NumberValidator
+    - IntegerValidator
+    - DecimalValidator
+    - DateTimeValidator
     - EmailValidator
+    - UrlValidator
+    - UuidValidator
+    - IpAddressValidator
+    - RegexValidator
+    - ArrayValidator
+    - EnumValidator
+    - FileValidator
     - PhoneNumberValidator
     - PasswordValidator
     - ImageValidator
@@ -45,6 +55,7 @@
     - UsernameValidator
 
 5. [Fluent Validator Configuration](#fluent-validator-configuration)
+    - [Structured Errors](#structured-errors)
 
 6. [Validation Matrix](#validation-matrix)
     - Feature Comparison Table
@@ -59,6 +70,10 @@
         - Array Validation
 
 7. [Basic Usage Examples](#basic-usage-examples)
+    - [Property Names](#property-names)
+    - [RuleSet Registry Definitions](#ruleset-registry-definitions)
+    - [Rule Facade](#rule-facade)
+    - [Direct Validation Without a Registry](#direct-validation-without-a-registry)
     - [String Validation](#string-validation)
     - [Email Validation](#email-validation)
     - [Number Validation](#number-validation)
@@ -73,7 +88,7 @@
     - [Associative Validation](#associative-validation)
     - [Error Normalization](#error-normalization)
     - [Registering Custom Validation Rules](#registering-custom-validation-rules)
-    - [Reusable Validation Instances - More modern way](#reusable-validation-instances---more-modern-way)
+    - [Reusable Validation Rules](#reusable-validation-rules)
 
 9. [Core Classes and Their Roles](#core-classes-and-their-roles)
     - [Validator](#validator)
@@ -94,7 +109,7 @@
 
 12. [Installation](#installation)
 
-13. [Migration to v2](#migration-to-v2)
+13. [Migration from v1 and v2](#migration-from-v1-and-v2)
 
 14. [Migration to v3](#migration-to-v3)
 
@@ -172,58 +187,58 @@ class ValidationRuleServiceProvider extends ServiceProvider
         self::registerPackageValidation();
     }
 
-    private static function registerDimensionValidation() : void {
-        ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
+    private static function registerDimensionValidation(): void {
+        ValidationRegistry::register(DimensionDto::class, static function (RuleSet $rules): array {
             return [
-                (new NumberValidator('Length', 'lengthCm'))->min(1)->max(1800),
-                (new NumberValidator('Width', 'widthCm'))->min(1)->max(1800),
-                (new NumberValidator('Height', 'heightCm'))->min(1)->max(2000),
-                (new NumberValidator('Weight', 'weightKg'))->min(1)->max(1000)
+                $rules->number('lengthCm')->min(1)->max(1800),
+                $rules->number('widthCm')->min(1)->max(1800),
+                $rules->number('heightCm')->min(1)->max(2000),
+                $rules->number('weightKg')->min(1)->max(1000)
             ];
         });
     }
 
     private static function registerItemValidation() : void
     {
-       ValidationRegistry::register(ItemDto::class, function (ItemDto $dto) {
+       ValidationRegistry::register(ItemDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Description', 'description'),
-                new ObjectValidator('dimension', DimensionDto::class),
+                $rules->string('description'),
+                $rules->object('dimension', DimensionDto::class),
            ];
        });
     }
 
     private static function registerAddressValidation() : void 
     {
-        ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
+        ValidationRegistry::register(AddressDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Suburb', 'suburb'),
-                (new NumberValidator('Postcode', 'postcode'))->length(2, 10),
-                (new StringValidator('State', 'state'))->length(2, 6),
-                (new StringValidator('Country', 'countryCode'))->length(2, 4)
+            $rules->string('suburb'),
+            $rules->number('postcode')->length(2, 10),
+            $rules->string('state')->length(2, 6),
+            $rules->string('countryCode')->length(2, 4)
             ];
         });
     }
 
     private static function registerShippingValidation(): void 
     {
-        ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
+        ValidationRegistry::register(FreightDto::class, static function (RuleSet $rules): array {
             return[
-                new ObjectArrayValidator('packages', PackageDto::class),
-                (new StringValidator('Customer name', 'customerName'))->length(0, 50)->optional(),
-                new ObjectValidator('pickupAddress', AddressDto::class),
-                new ObjectValidator('deliveryAddress', AddressDto::class),
+            $rules->objectArray('packages', PackageDto::class),
+            $rules->string('customerName')->length(0, 50)->optional(),
+            $rules->object('pickupAddress', AddressDto::class),
+            $rules->object('deliveryAddress', AddressDto::class),
             ];
         });
     }
 
     private static function registerPackageValidation(): void {
-        ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
+        ValidationRegistry::register(PackageDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Package Type', 'type'),
-                (new StringValidator('Description', 'description'))->length(0, 50)->optional(),
-                new ObjectValidator('dimensions', DimensionDto::class),
-                new ObjectArrayValidator('items', ItemDto::class)
+            $rules->string('type'),
+            $rules->string('description')->length(0, 50)->optional(),
+            $rules->object('dimensions', DimensionDto::class),
+            $rules->objectArray('items', ItemDto::class)
             ];
         });
     }
@@ -303,72 +318,79 @@ ValidationRegistry::register(RegistrationDto::class, static fn (RuleSet $rules):
 ]);
 ```
 
+For one-off validation of an object property, bind the rule directly to the object:
+```php
+$error = Rule::for($user)
+    ->string('name')
+    ->min(2)
+    ->max(30)
+    ->validate();
+```
+
 ### StringValidator
 Validates string type, length, nullability, and excludes HTML tags. Usage:
 ```php
-$validator = (new StringValidator('First Name', 'firstName'))->length(2, 50);
+$validator = Rule::string('firstName')->length(2, 50);
 ```
 
 ### NumberValidator
 Validates numeric type and enforces min/max value constraints. Usage:
 ```php
-$validator = (new NumberValidator('Age', 'age'))->min(18)->max(99);
+$validator = Rule::number('age')->min(18)->max(99);
 ```
 
 ### EmailValidator
 Validates email format, optional DNS, and structure. Usage:
 ```php
-$validator = (new EmailValidator('Email', 'email'))->verifyDomain();
+$validator = Rule::email('email')->verifyDomain();
 ```
 
 ### UsernameValidator
 Usernames can use an application-provided database or repository callback for uniqueness:
 ```php
-use Fynix\Validators\UsernameValidator;
-
-$validator = (new UsernameValidator('Username', 'username'))
+$validator = Rule::username('username')
     ->uniqueUsing(fn (string $username): bool => $userRepository->existsByUsername($username));
 ```
 
 ### PhoneNumberValidator
 Validates phone number format, allowed symbols, and length. Usage:
 ```php
-$validator = (new PhoneNumberValidator('Phone', 'phoneNumber'))->length(10, 12);
+$validator = Rule::phoneNumber('phoneNumber')->length(10, 12);
 ```
 
 ### PasswordValidator
 Enforces password strength: uppercase, lowercase, number, special character, length. Usage:
 ```php
-$validator = (new PasswordValidator('Password', 'password'))->length(8, 30);
+$validator = Rule::password('password')->length(8, 30);
 ```
 
 ### ImageValidator
 Validates a single image file: size, extension, and actual image content. Usage:
 ```php
-$validator = (new ImageValidator('Profile Picture', 'profilePic'))->maxFileSizeMB(5);
+$validator = Rule::image('profilePic')->maxFileSizeMB(5);
 ```
 
 ### ImagesValidator
 Validates an array of image files, each using ImageValidator. Usage:
 ```php
-$validator = (new ImagesValidator('Gallery', 'galleryImages'))->min(1)->max(5);
+$validator = Rule::images('galleryImages')->min(1)->max(5);
 ```
 
 ### ObjectValidator
 Validates a nested object property using registered rules for its class. Usage:
 ```php
-$validator = new ObjectValidator('address', UserAddress::class);
+$validator = Rule::object('address', UserAddress::class);
 ```
 
 ### ObjectArrayValidator
 Validates an array of objects, each using registered rules for its class. Usage:
 ```php
-$validator = new ObjectArrayValidator('items', FreightItemDto::class);
+$validator = Rule::objectArray('items', FreightItemDto::class);
 ```
 
 ## Fluent Validator Configuration
 
-Validators are configured directly and return themselves from each supported method. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for image files. Use `isRequired($condition)` when requiredness depends on application state; `required()` and `optional()` remain convenient aliases. Email domain checks are opt-in through `verifyDomain()` so validation does not require network access by default.
+Validators are configured through immutable fluent methods. Each method returns a new validator instance. `min()` and `max()` set length for string-like validators, numeric bounds for `NumberValidator`, and image count for `ImagesValidator`. Use `maxFileSizeMB()` for image files. Use `isRequired($condition)` when requiredness depends on application state; `required()` and `optional()` remain convenient aliases. Email domain checks are opt-in through `verifyDomain()` so validation does not require network access by default.
 
 ### Structured Errors
 
@@ -390,7 +412,7 @@ Each error also exposes `field_name`, `rule`, `parameters`, and `toArray()` for 
 For all applicable errors on a single field, use `validateFieldAll()`:
 
 ```php
-$errors = (new PasswordValidator('Password', 'password'))
+$errors = Rule::password('password')
     ->validateFieldAll('abc');
 ```
 
@@ -412,18 +434,14 @@ $errors = (new PasswordValidator('Password', 'password'))
 ## Basic Usage Examples
 
 ### Property Names
-Use the Composer-autoloaded `nameof()` helper to validate property names when defining rules:
+Use `Rule::on()` or `RuleSet` to validate property names against the owning class when defining rules:
 ```php
-use Fynix\Validators\StringValidator;
-use function Fynix\nameof;
+use Fynix\Rule;
 
-$validator = new StringValidator(
-    'First name',
-    nameof(User::class, 'firstName')
-);
+$validator = Rule::on(User::class)->string('firstName');
 ```
 
-Misspelled properties throw an `InvalidArgumentException` when the rule is created.
+Misspelled properties throw a typed rule-definition exception when the rule is created.
 
 ### RuleSet Registry Definitions
 For DTO rules, use a static `ValidationRegistry` closure receiving a `RuleSet`. `RuleSet` delegates to `Rule::on()` and checks each property against the owning class.
@@ -476,16 +494,39 @@ $bare = Rule::string('firstName');
 $checked = Rule::on(User::class)->string('firstName');
 ```
 
-The bare form derives its label automatically. The scoped form validates the owner class and property using the exact `nameof()` messages, throwing typed rule-definition exceptions. This is the v3 construction API, replacing direct validator construction and `Rules::for()`.
+The bare form derives its label automatically. The scoped form validates the owner class and property using the `nameof()` helper, throwing typed rule-definition exceptions. This is the v3 construction API, replacing direct validator construction and `Rules::for()`.
 
 ### Direct Validation Without a Registry
-When you do not need object-level rule registration, you can validate a single value directly with a validator instance. This is useful for form fields, ad hoc checks, and isolated DTO members.
+When you do not need object-level rule registration, validate each value directly with a validator instance. `ValidationHandler::validate()` is for registered objects and cannot infer rules for an unregistered `User` class. This approach is useful for form fields, ad hoc checks, and isolated DTO members.
 
 ```php
 use Fynix\Rule;
 use Fynix\ValidationError;
 
-$rules = [Rule::on(User::class)->string('firstName')->min(2)->max(50)];
+final class User
+{
+    public string $firstName = '';
+    public string $lastName = '';
+    public string $email = '';
+    public int $age = 0;
+    public string $password = '';
+}
+
+$user = new User();
+$user->firstName = 'John';
+$user->lastName = 'Doe';
+$user->email = 'john@example.com';
+$user->age = 32;
+$user->password = 'StrongPassword123!';
+
+// Validate all five properties without registering User::class.
+$errors = array_filter([
+    'firstName' => Rule::string('firstName')->length(2, 50)->validateField($user->firstName),
+    'lastName' => Rule::string('lastName')->length(2, 50)->validateField($user->lastName),
+    'email' => Rule::email('email')->validateField($user->email),
+    'age' => Rule::number('age')->min(18)->max(120)->validateField($user->age),
+    'password' => Rule::password('password')->length(8, 128)->validateField($user->password),
+]);
 
 // Single-field validation returning the first error
 $error = Rule::string('firstName')
@@ -546,13 +587,10 @@ $objectArrayValidator = Rule::objectArray('items', FreightItemDto::class);
 ```
 
 ### Example: Full User Registration Validation
-Below is a practical example showing how to use the library for a user registration form with multiple fields and nested validation:
+Below is a practical example showing how to use the v3 rule registry for a user registration form with multiple fields and nested validation:
 
 ```php
-use Fynix\Validators\StringValidator;
-use Fynix\Validators\EmailValidator;
-use Fynix\Validators\PasswordValidator;
-use Fynix\Validators\ObjectValidator;
+use Fynix\RuleSet;
 use Fynix\ValidationRegistry;
 use Fynix\ValidationHandler;
 
@@ -568,22 +606,22 @@ class User {
     public ?string $password = null;
     public ?UserAddress $address = null;
 
-    public static function getValidationRules($instance) {
-        return [
-            new StringValidator('First Name', 'firstName'),
-            new EmailValidator('Email', 'email'),
-            new PasswordValidator('Password', 'password'),
-            new ObjectValidator('address', UserAddress::class),
-        ];
-    }
 }
 
-ValidationRegistry::register(User::class, [User::class, 'getValidationRules']);
-ValidationRegistry::register(UserAddress::class, function($instance) {
+ValidationRegistry::register(UserAddress::class, static function (RuleSet $rules): array {
     return [
-        new StringValidator('Street', 'street'),
-        new StringValidator('City', 'city'),
-        new StringValidator('Postcode', 'postcode'),
+        $rules->string('street'),
+        $rules->string('city'),
+        $rules->string('postcode'),
+    ];
+});
+
+ValidationRegistry::register(User::class, static function (RuleSet $rules): array {
+    return [
+        $rules->string('firstName')->min(2),
+        $rules->email('email'),
+        $rules->password('password')->min(8),
+        $rules->object('address', UserAddress::class),
     ];
 });
 
@@ -627,20 +665,21 @@ $flatErrors = ValidationHandler::flattenValidationErrors($errors);
 
 ### Registering Custom Validation Rules
 ```php
+use Fynix\RuleSet;
 use Fynix\ValidationRegistry;
 
-ValidationRegistry::register(User::class, function($instance) {
+ValidationRegistry::register(User::class, static function (RuleSet $rules): array {
     return [
-        new StringValidator('First Name', 'firstName'),
-        new EmailValidator('Email', 'email'),
+        $rules->string('firstName'),
+        $rules->email('email'),
         // ... other rules
     ];
 });
 ```
 
-### Reusable Validation Instances - More modern way
+### Reusable Validation Rules
 `fynix` allows you to define reusable validation rules for your **data transfer objects (DTOs)** using the `ValidationRegistry`.
-The `ValidationRuleServiceProvider` demonstrates how to register validation rules for multiple DTOs in a structured and type-safe way.
+Each registry factory receives a `RuleSet`, so rule definitions are type-safe and reusable.
 
 ```php
 <?php
@@ -653,11 +692,8 @@ use App\Dto\Quote\FreightDto;
 use App\Dto\Quote\ItemDto;
 use App\Dto\Quote\PackageDto;
 use Illuminate\Support\ServiceProvider;
+use Fynix\RuleSet;
 use Fynix\ValidationRegistry;
-use Fynix\Validators\NumberValidator;
-use Fynix\Validators\ObjectArrayValidator;
-use Fynix\Validators\ObjectValidator;
-use Fynix\Validators\StringValidator;
 
 class ValidationRuleServiceProvider extends ServiceProvider
 {
@@ -681,58 +717,58 @@ class ValidationRuleServiceProvider extends ServiceProvider
         //
     }
 
-    private static function registerDimensionValidation() : void {
-        ValidationRegistry::register(DimensionDto::class, function(DimensionDto $dimension) {
+    private static function registerDimensionValidation(): void {
+        ValidationRegistry::register(DimensionDto::class, static function (RuleSet $rules): array {
             return [
-                (new NumberValidator('Length', 'lengthCm'))->min(1)->max(1800),
-                (new NumberValidator('Width', 'widthCm'))->min(1)->max(1800),
-                (new NumberValidator('Height', 'heightCm'))->min(1)->max(2000),
-                (new NumberValidator('Weight', 'weightKg'))->min(1)->max(1000)
+                $rules->number('lengthCm')->min(1)->max(1800),
+                $rules->number('widthCm')->min(1)->max(1800),
+                $rules->number('heightCm')->min(1)->max(2000),
+                $rules->number('weightKg')->min(1)->max(1000),
             ];
         });
     }
 
     private static function registerItemValidation() : void
     {
-       ValidationRegistry::register(ItemDto::class, function (ItemDto $dto) {
+       ValidationRegistry::register(ItemDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Description', 'description'),
-                new ObjectValidator('dimension', DimensionDto::class),
+                $rules->string('description'),
+                $rules->object('dimension', DimensionDto::class),
            ];
        });
     }
 
     private static function registerAddressValidation() : void 
     {
-        ValidationRegistry::register(AddressDto::class, function(AddressDto $dto) {
+        ValidationRegistry::register(AddressDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Suburb', 'suburb'),
-                (new NumberValidator('Postcode', 'postcode'))->length(2, 10),
-                (new StringValidator('State', 'state'))->length(2, 6),
-                (new StringValidator('Country', 'countryCode'))->length(2, 4)
+            $rules->string('suburb'),
+            $rules->number('postcode')->length(2, 10),
+            $rules->string('state')->length(2, 6),
+            $rules->string('countryCode')->length(2, 4),
             ];
         });
     }
 
     private static function registerShippingValidation(): void 
     {
-        ValidationRegistry::register(FreightDto::class, function(FreightDto $dto) {
+        ValidationRegistry::register(FreightDto::class, static function (RuleSet $rules): array {
             return[
-                new ObjectArrayValidator('packages', PackageDto::class),
-                (new StringValidator('Customer name', 'customerName'))->length(0, 50)->optional(),
-                new ObjectValidator('pickupAddress', AddressDto::class),
-                new ObjectValidator('deliveryAddress', AddressDto::class),
+            $rules->objectArray('packages', PackageDto::class),
+            $rules->string('customerName')->length(0, 50)->optional(),
+            $rules->object('pickupAddress', AddressDto::class),
+            $rules->object('deliveryAddress', AddressDto::class),
             ];
         });
     }
 
     private static function registerPackageValidation(): void {
-        ValidationRegistry::register(PackageDto::class, function(PackageDto $dto) {
+        ValidationRegistry::register(PackageDto::class, static function (RuleSet $rules): array {
             return [
-                new StringValidator('Package Type', 'type'),
-                (new StringValidator('Description', 'description'))->length(0, 50)->optional(),
-                new ObjectValidator('dimensions', DimensionDto::class),
-                new ObjectArrayValidator('items', ItemDto::class)
+            $rules->string('type'),
+            $rules->string('description')->length(0, 50)->optional(),
+            $rules->object('dimensions', DimensionDto::class),
+            $rules->objectArray('items', ItemDto::class),
             ];
         });
     }
@@ -767,10 +803,10 @@ $flatErrors = ValidationHandler::flattenValidationErrors($errors);
 ### ValidationRegistry
 Implements a registry pattern for associating classes with their validation rules. Register rules for a class and retrieve them dynamically during validation. Example:
 ```php
-ValidationRegistry::register(User::class, function($instance) {
+ValidationRegistry::register(User::class, static function (RuleSet $rules): array {
     return [
-        new StringValidator('First Name', 'firstName'),
-        new EmailValidator('Email', 'email'),
+        $rules->string('firstName'),
+        $rules->email('email'),
         // ...
     ];
 });
@@ -806,39 +842,15 @@ composer require bishalshrestha/fynix
 ```
 --- 
 
-## Migration to v2
+## Migration from v1 and v2
 
-Validation option classes were removed in v2. Configure validators directly with fluent methods:
-
-```php
-// v1
-new StringValidator(
-    'Name',
-    'name',
-    new StringValidationOptions(['min' => 2, 'max' => 50])
-);
-
-// v2
-(new StringValidator('Name', 'name'))
-    ->min(2)
-    ->max(50);
-```
-
-In v2, use `Rules::for()` for a complete DTO definition and `nameof()` to validate property names. Email username uniqueness is now handled by `UsernameValidator::uniqueUsing()` instead of `EmailValidator`.
+Versions 1 and 2 used public validator constructors and, in v2, the `Rules::for()` builder. Those APIs are no longer supported in v3. Replace them with the v3 `Rule`, `Rule::on()`, and `RuleSet` entry points. The fluent constraints and `UsernameValidator::uniqueUsing()` behavior remain available through those entry points.
 
 ## Migration to v3
 
 Version 3 is a deliberate breaking release. Public validator constructors are removed and validators must be created through `Rule`, `ScopedRule`, or `RuleSet`.
 
 ### Validator construction
-
-Before:
-
-```php
-new StringValidator('Name', 'name');
-```
-
-After:
 
 ```php
 Rule::string('name');
@@ -847,16 +859,9 @@ Rule::on(User::class)->string('name');
 
 ### `Rules::for()` removal
 
-The v2 `Rules::for()` and `RuleBuilder` APIs are removed entirely. Replace them with `Rule::on()` or a static `RuleSet` registry closure:
+The v1/v2 builder APIs are removed entirely. Use `Rule::on()` or a static `RuleSet` registry closure:
 
 ```php
-// Before
-$rules = Rules::for(User::class)
-    ->string(nameof(User::class, 'name'))
-    ->min(2)
-    ->rules();
-
-// After
 $rules = [Rule::on(User::class)->string('name')->min(2)];
 ```
 
@@ -865,12 +870,6 @@ $rules = [Rule::on(User::class)->string('name')->min(2)];
 `ValidationRegistry` remains static. The closure argument changes from the DTO instance to `RuleSet`; instance-aware rule registration is not preserved:
 
 ```php
-// Before
-ValidationRegistry::register(User::class, static fn(User $user): array => [
-    new StringValidator('Name', 'name'),
-]);
-
-// After
 ValidationRegistry::register(User::class, static fn(RuleSet $rules): array => [
     $rules->string('name'),
 ]);

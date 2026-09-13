@@ -23,8 +23,9 @@ class EmailValidator extends LengthValidatorBase
         return $this->with('_verifyDomain', $enabled);
     }
 
-    public function validate(mixed $fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue = null) : ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $error = null;
 
         if (!is_string($fieldValue) || !filter_var($fieldValue, FILTER_VALIDATE_EMAIL))

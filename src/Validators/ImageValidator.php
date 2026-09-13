@@ -24,8 +24,9 @@ class ImageValidator extends ValidatorBase
         return $this->with('_maxFileSizeMB', $megabytes);
     }
 
-    public function validate(mixed $fieldValue) : ?ValidationError
+    public function validate(mixed $fieldValue = null) : ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (!is_array($fieldValue))
             return new ValidationError($this, "$this->name must be an uploaded image.", 'image.invalid');
 

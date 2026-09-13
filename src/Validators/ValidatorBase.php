@@ -28,6 +28,7 @@ abstract class ValidatorBase implements Validatable
     protected mixed $prohibitedIfValue = null;
     protected bool $hasProhibitedIf = false;
     protected bool $prohibitedIfMatches = true;
+    protected ?object $boundObject = null;
     
     protected function __construct(string $name, string $propertyName)
     {
@@ -48,6 +49,28 @@ abstract class ValidatorBase implements Validatable
         $clone->{$property} = $value;
 
         return $clone;
+    }
+
+    public function bindTo(object|string $owner): static
+    {
+        if (is_string($owner)) {
+            return $this;
+        }
+
+        return $this->with('boundObject', $owner);
+    }
+
+    protected function validateBound(mixed $fieldValue): ?ValidationError
+    {
+        if ($this->boundObject === null) {
+            return null;
+        }
+
+        $validator = clone $this;
+        $validator->boundObject = null;
+        $value = $this->boundObject->{$this->propertyName} ?? null;
+
+        return $validator->validateField($value, $this->boundObject);
     }
 
     public function label(string $label): static
@@ -224,7 +247,7 @@ abstract class ValidatorBase implements Validatable
      * This method should be implemented in child classes to define the specific validation logic.
     * @return ValidationError|null The first validation error, if any.
      */
-    abstract public function validate(mixed $fieldValue) : ?ValidationError;
+    abstract public function validate(mixed $fieldValue = null) : ?ValidationError;
 
     /** @return list<ValidationError> */
     public function validateAll(mixed $fieldValue): array

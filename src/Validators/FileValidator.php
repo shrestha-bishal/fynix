@@ -32,8 +32,9 @@ class FileValidator extends ValidatorBase
         return $this->with('allowedExtensions', array_map('strtolower', $extensions));
     }
 
-    public function validate(mixed $fieldValue): ?ValidationError
+    public function validate(mixed $fieldValue = null): ?ValidationError
     {
+        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (($fieldValue === null || $fieldValue === '') && !$this->isRequired) {
             return null;
         }
