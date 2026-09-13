@@ -29,6 +29,7 @@ abstract class ValidatorBase implements Validatable
     protected bool $hasProhibitedIf = false;
     protected bool $prohibitedIfMatches = true;
     protected ?object $boundObject = null;
+        protected bool $supportsBoundValidation = true;
     
     protected function __construct(string $name, string $propertyName)
     {
@@ -60,17 +61,19 @@ abstract class ValidatorBase implements Validatable
         return $this->with('boundObject', $owner);
     }
 
-    protected function validateBound(mixed $fieldValue): ?ValidationError
+    final public function validate(mixed $fieldValue = null): ?ValidationError
     {
-        if ($this->boundObject === null) {
-            return null;
+        if ($this->boundObject !== null) {
+            if (!$this->supportsBoundValidation) {
+                throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
+            }
+
+            $fieldValue = $this->boundObject->{$this->propertyName} ?? null;
+
+            return $this->validateField($fieldValue, $this->boundObject);
         }
 
-        $validator = clone $this;
-        $validator->boundObject = null;
-        $value = $this->boundObject->{$this->propertyName} ?? null;
-
-        return $validator->validateField($value, $this->boundObject);
+        return $this->validateField($fieldValue);
     }
 
     public function label(string $label): static
@@ -247,12 +250,12 @@ abstract class ValidatorBase implements Validatable
      * This method should be implemented in child classes to define the specific validation logic.
     * @return ValidationError|null The first validation error, if any.
      */
-    abstract public function validate(mixed $fieldValue = null) : ?ValidationError;
+    abstract protected function validateValue(mixed $fieldValue): ?ValidationError;
 
     /** @return list<ValidationError> */
     public function validateAll(mixed $fieldValue): array
     {
-        $error = $this->validate($fieldValue);
+        $error = $this->validateValue($fieldValue);
         return $error === null ? [] : [$error];
     }
 

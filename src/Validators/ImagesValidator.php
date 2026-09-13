@@ -57,9 +57,8 @@ class ImagesValidator extends ValidatorBase {
         return (int) $value;
     }
 
-    public function validate(mixed $fieldValue = null) : ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $error = null;
 
         if (($fieldValue === null || $fieldValue === '') && !$this->isRequired) {

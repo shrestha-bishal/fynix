@@ -20,9 +20,8 @@ class DateTimeValidator extends ValidatorBase
         return $this->with('format', $format);
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if ($fieldValue instanceof DateTimeInterface) {
             return null;
         }

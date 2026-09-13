@@ -818,11 +818,11 @@ Represents a validation error, including the rule, error message, and field name
 
 ## Extending the Library
 
-You can create your own custom validators by extending `ValidatorBase` and implementing the `validate($fieldValue)` method. Add validator-specific fluent methods when your custom validator needs extra constraints.
+You can create your own custom validators by extending `ValidatorBase` and implementing the protected `validateValue($fieldValue)` method. The public `validate()` method runs the complete shared pipeline before calling the custom type check. Add validator-specific fluent methods when your custom validator needs extra constraints.
 
 ```php
 class CustomValidator extends ValidatorBase {
-    public function validate($fieldValue) : ?ValidationError {
+    protected function validateValue(mixed $fieldValue): ?ValidationError {
         // Custom validation logic
     }
 }

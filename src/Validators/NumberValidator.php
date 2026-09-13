@@ -43,9 +43,8 @@ class NumberValidator extends ValidatorBase {
         return $clone->with('maxLength', $this->validatedConstraint($max));
     }
 
-    public function validate(mixed $fieldValue = null) : ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $error = null;
 
         if (!is_numeric($fieldValue))

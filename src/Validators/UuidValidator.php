@@ -12,9 +12,8 @@ class UuidValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $pattern = '/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i';
 
         return is_string($fieldValue) && preg_match($pattern, $fieldValue) === 1

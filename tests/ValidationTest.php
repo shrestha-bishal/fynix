@@ -96,7 +96,7 @@ final class ValidationTest extends TestCase
         self::assertSame('regex.invalid', Rule::regex('code', '/^[A-Z]+$/')->validate('abc')?->code);
         self::assertSame('enum.invalid', Rule::enum('state', Status::class)->validate('unknown')?->code);
         self::assertSame('email.invalid', Rule::email('email')->validate('invalid')?->code);
-        self::assertSame('phone.invalid', Rule::phoneNumber('phone')->validate('abc')?->code);
+        self::assertSame('phone.invalid', Rule::phoneNumber('phone')->validate('123456789a')?->code);
         self::assertSame('username.characters', Rule::username('username')->validate('bad-name')?->code);
     }
 
@@ -271,6 +271,7 @@ final class ValidationTest extends TestCase
         self::assertNull($validator->validateField(null));
         self::assertNotNull($validator->validateField('ab'));
         self::assertNull($validator->validateField('Bishal'));
+        self::assertSame('length.min', Rule::string('name')->min(2)->validate('A')?->code);
     }
 
     public function testGenericValueSetRulesUseStrictComparison(): void

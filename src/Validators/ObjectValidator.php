@@ -19,14 +19,11 @@ class ObjectValidator extends ValidatorBase {
         parent::__construct($name, $propertyName);
         $this->className = $className;
         $this->includeGenericValidation = false;
+        $this->supportsBoundValidation = false;
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) {
-            throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
-        }
-
         return null;
     }
 }
