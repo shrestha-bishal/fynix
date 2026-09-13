@@ -84,6 +84,41 @@ final class ValidationTest extends TestCase
         self::assertNull(Rule::regex('code', '/^[A-Z]+$/')->validate('ABC'));
     }
 
+    public function testValidatorsReturnStructuredErrorsForInvalidValues(): void
+    {
+        self::assertSame('boolean.invalid', Rule::boolean('enabled')->validate('false')?->code);
+        self::assertSame('datetime.invalid', Rule::dateTime('createdAt')->validate('not-a-date')?->code);
+        self::assertSame('url.invalid', Rule::url('website')->validate('not a url')?->code);
+        self::assertSame('uuid.invalid', Rule::uuid('id')->validate('invalid')?->code);
+        self::assertSame('integer.invalid', Rule::integer('count')->validate(1.5)?->code);
+        self::assertSame('decimal.invalid', Rule::decimal('price')->validate(1)?->code);
+        self::assertSame('ip.invalid', Rule::ipAddress('ip')->validate('999.999.999.999')?->code);
+        self::assertSame('regex.invalid', Rule::regex('code', '/^[A-Z]+$/')->validate('abc')?->code);
+        self::assertSame('enum.invalid', Rule::enum('state', Status::class)->validate('unknown')?->code);
+        self::assertSame('email.invalid', Rule::email('email')->validate('invalid')?->code);
+        self::assertSame('phone.invalid', Rule::phoneNumber('phone')->validate('abc')?->code);
+        self::assertSame('username.characters', Rule::username('username')->validate('bad-name')?->code);
+    }
+
+    public function testArrayRulesHandleWrongShapesAndInvalidItems(): void
+    {
+        self::assertSame('array.invalid', Rule::arrayOf('tags')->validate('not-an-array')?->code);
+        self::assertSame('array.min', Rule::arrayOf('tags')->min(2)->validate([])?->code);
+        self::assertSame('array.max', Rule::arrayOf('tags')->max(1)->validate(['a', 'b'])?->code);
+
+        $errors = Rule::arrayOf('tags')->each(Rule::string('item'))->validateFieldAll(['valid', 123]);
+
+        self::assertCount(1, $errors);
+        self::assertSame('tags.1', $errors[0]->field_name);
+    }
+
+    public function testImageValidatorsRejectMalformedUploadShapes(): void
+    {
+        self::assertSame('required', Rule::image('image')->validate([])?->code);
+        self::assertSame('images.invalid', Rule::images('images')->validate('not-an-array')?->code);
+        self::assertNull(Rule::images('images')->optional()->validate(null));
+    }
+
     public function testLabelDerivationSupportsSnakeCaseAcronymsAndEmptyOverride(): void
     {
         self::assertSame('First Name', Rule::string('first_name')->name());
@@ -313,6 +348,30 @@ final class ValidationTest extends TestCase
         self::assertArrayHasKey('items.0.name', $errors);
     }
 
+    public function testNestedValidationReportsWrongObjectTypesAndArrayItems(): void
+    {
+        ValidationRegistry::register(Address::class, static fn(RuleSet $rules): array => [
+            $rules->string('street'),
+        ]);
+        ValidationRegistry::register(Item::class, static fn(RuleSet $rules): array => [
+            $rules->string('name'),
+        ]);
+        ValidationRegistry::register(MalformedOrder::class, static fn(RuleSet $rules): array => [
+            $rules->object('address', Address::class),
+            $rules->objectArray('items', Item::class),
+        ]);
+
+        $order = new MalformedOrder();
+        $order->address = new \stdClass();
+        $order->items = [new Item(), 'invalid'];
+
+        $errors = ValidationHandler::validateAndFlatten($order);
+
+        self::assertArrayHasKey('address', $errors);
+        self::assertArrayHasKey('items.0.name', $errors);
+        self::assertArrayHasKey('items.1', $errors);
+    }
+
     public function testListenersFireOnceForEachPublicValidateCall(): void
     {
         $listener = new TestListener();
@@ -378,6 +437,14 @@ final class Registration
     public ?string $individualId = null;
     public ?string $nickname = null;
     public ?string $businessName = null;
+}
+
+final class MalformedOrder
+{
+    public mixed $address = null;
+
+    /** @var list<mixed> */
+    public array $items = [];
 }
 
 enum Status: string

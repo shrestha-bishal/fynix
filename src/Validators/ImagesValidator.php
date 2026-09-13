@@ -62,7 +62,15 @@ class ImagesValidator extends ValidatorBase {
         if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $error = null;
 
-        $imageCount = count($fieldValue['name'] ?? []);
+        if (($fieldValue === null || $fieldValue === '') && !$this->isRequired) {
+            return null;
+        }
+
+        if (!is_array($fieldValue) || !isset($fieldValue['name']) || !is_array($fieldValue['name'])) {
+            return new ValidationError($this, "$this->name must be an array of uploaded images.", 'images.invalid');
+        }
+
+        $imageCount = count($fieldValue['name']);
 
         if($imageCount === 0) {
             if ($this->isRequired)
@@ -84,11 +92,11 @@ class ImagesValidator extends ValidatorBase {
             $fieldValueByIndex = 
             [
                 'name' => $fieldValue['name'][$key],
-                'full_path' => $fieldValue['full_path'][$key],
-                'type' => $fieldValue['type'][$key],
-                'tmp_name' => $fieldValue['tmp_name'][$key],
-                'error' => $fieldValue['error'][$key],
-                'size' => $fieldValue['size'][$key]
+                'full_path' => $fieldValue['full_path'][$key] ?? '',
+                'type' => $fieldValue['type'][$key] ?? '',
+                'tmp_name' => $fieldValue['tmp_name'][$key] ?? '',
+                'error' => $fieldValue['error'][$key] ?? UPLOAD_ERR_NO_FILE,
+                'size' => $fieldValue['size'][$key] ?? 0
             ];
 
             $imageValidation = Rule::image($name)->maxFileSizeMB($this->maxFileSizeMB);
