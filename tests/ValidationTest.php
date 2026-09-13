@@ -113,6 +113,27 @@ final class ValidationTest extends TestCase
         self::assertNull(Rule::for($user)->string('name')->min(2)->max(30)->validate());
     }
 
+    public function testObjectBoundNestedRulesFailLoudlyInsteadOfReturningFalseSuccess(): void
+    {
+        $order = new Order();
+        $order->address = new Address();
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Nested validators must run through ValidationHandler::validate().');
+
+        Rule::for($order)->object('address', Address::class)->validate();
+    }
+
+    public function testObjectBoundObjectArrayRulesFailLoudlyInsteadOfReturningFalseSuccess(): void
+    {
+        $order = new Order();
+
+        $this->expectException(\LogicException::class);
+        $this->expectExceptionMessage('Nested validators must run through ValidationHandler::validate().');
+
+        Rule::for($order)->objectArray('items', Item::class)->validate();
+    }
+
     public function testScopedRuleThrowsTypedDefinitionExceptions(): void
     {
         try {
