@@ -4,6 +4,7 @@ namespace Fynix;
 
 use Fynix\Contracts\NestedValidator;
 use Fynix\Contracts\ValidationListener;
+use Fynix\Contracts\Validatable;
 use Fynix\Validators\ValidatorBase;
 use InvalidArgumentException;
 
@@ -31,15 +32,24 @@ class ValidationHandler {
      * Validate an instance and return errors.
      *
      * @param object $instance
-     * @return array
+     * @param array<array-key, Validatable>|null $rules Optional rules; registry rules are used when omitted.
+     * @param bool $flattenErrorToString
+     * @return array<string|int, mixed>
      */
-    /** @return array<string|int, mixed> */
-    public static function validate(object $instance, bool $flattenErrorToString = true) : array {
+    public static function validate(
+        object $instance,
+        ?array $rules = null,
+        bool $flattenErrorToString = true
+    ): array {
         foreach (self::$listeners as $listener) {
             $listener->beforeValidate($instance);
         }
 
-        $errors = self::validateInternal($instance, $flattenErrorToString);
+        $errors = self::validateInternal(
+            $instance,
+            $rules ?? ValidationRegistry::rulesFor(get_class($instance)),
+            $flattenErrorToString
+        );
 
         foreach (self::$listeners as $listener) {
             $listener->afterValidate($instance, $errors);
@@ -49,11 +59,12 @@ class ValidationHandler {
     }
 
     /** @return array<string|int, mixed> */
-    private static function validateInternal(object $instance, bool $flattenErrorToString): array
+    /**
+     * @param array<array-key, Validatable> $definitions
+     * @return array<string|int, mixed>
+     */
+    private static function validateInternal(object $instance, array $definitions, bool $flattenErrorToString): array
     {
-        $class = get_class($instance);
-        $definitions = ValidationRegistry::rulesFor($class);
-        
         $rules = []; // rules by property
         $structureErrors = [];
 
@@ -162,7 +173,7 @@ class ValidationHandler {
         $errors = [];
 
         foreach($instances as $key => $instance) {
-            $errors[$key] = self::validate($instance, $flattenErrorToString);
+            $errors[$key] = self::validate($instance, flattenErrorToString: $flattenErrorToString);
         }
 
         return $errors;

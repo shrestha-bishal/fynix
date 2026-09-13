@@ -169,6 +169,18 @@ final class ValidationTest extends TestCase
         Rule::for($order)->objectArray('items', Item::class)->validate();
     }
 
+    public function testHandlerCanValidateExplicitRulesWithoutUsingTheRegistry(): void
+    {
+        $user = new User();
+        $rules = [
+            Rule::on(User::class)->string('firstName')->min(2),
+        ];
+
+        $errors = ValidationHandler::validate($user, rules: $rules);
+
+        self::assertSame('First Name is required.', $errors['firstName']);
+    }
+
     public function testScopedRuleThrowsTypedDefinitionExceptions(): void
     {
         try {
