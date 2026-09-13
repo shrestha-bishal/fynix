@@ -181,6 +181,14 @@ final class ValidationTest extends TestCase
         self::assertSame('First Name is required.', $errors['firstName']);
     }
 
+    public function testUnboundZeroArgumentValidateFailsLoudlyInsteadOfSilentSuccess(): void
+    {
+        $error = Rule::string('firstName')->min(2)->validate();
+
+        self::assertNotNull($error);
+        self::assertSame('required', $error->code);
+    }
+
     public function testScopedRuleThrowsTypedDefinitionExceptions(): void
     {
         try {
