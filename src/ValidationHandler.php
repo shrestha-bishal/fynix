@@ -2,8 +2,7 @@
 declare(strict_types=1);
 namespace Fynix;
 
-use Fynix\Validators\ObjectArrayValidator;
-use Fynix\Validators\ObjectValidator;
+use Fynix\Contracts\NestedValidator;
 use Fynix\Contracts\ValidationListener;
 use Fynix\Validators\ValidatorBase;
 use InvalidArgumentException;
@@ -59,30 +58,30 @@ class ValidationHandler {
         $structureErrors = [];
 
         foreach($definitions as $definition) {
-            if($definition instanceof ObjectValidator) {
+            if ($definition instanceof NestedValidator && !$definition->isCollection()) {
                 $property = $definition->propertyName();
                 $nestedInstance = $instance->$property ?? null;
 
                 if ($nestedInstance === null) {
                     if ($definition->requiredState())
                         $structureErrors[$property] = self::structureError($property, "$property is required.", 'required', $flattenErrorToString);
-                } elseif (!is_object($nestedInstance) || !is_a($nestedInstance, $definition->className)) {
-                    $structureErrors[$property] = self::structureError($property, "$property must be an instance of {$definition->className}.", 'object.invalid', $flattenErrorToString);
-                } else {
+                } elseif (!$definition->accepts($nestedInstance)) {
+                    $structureErrors[$property] = self::structureError($property, "$property must be an instance of {$definition->targetClass()}.", 'object.invalid', $flattenErrorToString);
+                } elseif (is_object($nestedInstance)) {
                     $rules[$property] = ValidationRegistry::rulesFor(get_class($nestedInstance));
                 }
 
                 continue;
             }
 
-            if ($definition instanceof ObjectArrayValidator) {
+            if ($definition instanceof NestedValidator && $definition->isCollection()) {
                 $property = $definition->propertyName();
                 $items = $instance->{$property} ?? null;
 
                 if ($items === null) {
                     if ($definition->requiredState())
                         $structureErrors[$property] = self::structureError($property, "$property is required.", 'required', $flattenErrorToString);
-                } elseif (is_array($items)) {
+                } elseif ($definition->accepts($items)) {
                     $itemCount = count($items);
                     if ($definition->minItems() !== null && $itemCount < $definition->minItems())
                         $structureErrors[$property] = self::structureError($property, "$property must contain at least {$definition->minItems()} items.", 'array.min', $flattenErrorToString);
@@ -92,7 +91,7 @@ class ValidationHandler {
                     $rules[$property] = [];
 
                     foreach ($items as $index => $item) {
-                        if (is_object($item) && is_a($item, $definition->className)) {
+                        if ($definition->acceptsItem($item) && is_object($item)) {
                             $rules[$property][$index] =
                                 ValidationRegistry::rulesFor(get_class($item));
                         } else {
