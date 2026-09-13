@@ -14,9 +14,8 @@ class UrlValidator extends LengthValidatorBase
         $this->maxLength = 2048;
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return is_string($fieldValue) && filter_var($fieldValue, FILTER_VALIDATE_URL) !== false
             ? null
             : new ValidationError($this, "$this->name must be a valid URL.", 'url.invalid');

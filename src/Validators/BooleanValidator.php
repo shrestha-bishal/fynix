@@ -12,9 +12,8 @@ class BooleanValidator extends ValidatorBase
         parent::__construct($name, $propertyName);
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         return is_bool($fieldValue)
             ? null
             : new ValidationError($this, "$this->name must be a boolean.", 'boolean.invalid');

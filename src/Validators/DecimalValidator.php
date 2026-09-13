@@ -25,9 +25,8 @@ class DecimalValidator extends ValidatorBase
         return $this->with('maxValue', (float) $value);
     }
 
-    public function validate(mixed $fieldValue = null): ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         if (!is_float($fieldValue)) {
             return new ValidationError($this, "$this->name must be a decimal number.", 'decimal.invalid');
         }

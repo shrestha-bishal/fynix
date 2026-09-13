@@ -15,9 +15,8 @@ class StringValidator extends LengthValidatorBase {
         $this->maxLength = 50;
     }
 
-    public function validate(mixed $fieldValue = null) : ?ValidationError
+    protected function validateValue(mixed $fieldValue): ?ValidationError
     {
-        if ($this->boundObject !== null) return $this->validateBound($fieldValue);
         $error = null;
 
         if(!is_string($fieldValue))
