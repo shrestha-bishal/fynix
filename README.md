@@ -262,7 +262,7 @@ Once your validation rules are registered, you can validate DTO instances anywhe
 ---
 
 ## Features
-- **Comprehensive Validation**: Strings, numbers, emails, phone numbers, passwords, images, arrays of images, nested objects, and arrays of objects.
+- **Comprehensive Validation**: Strings, numbers, booleans, dates, emails, phone numbers, passwords, URLs, UUIDs, enums, files, images, arrays, nested objects, and arrays of objects.
 - **Extensible Architecture**: Easily add custom validation rules or extend built-in validators.
 - **Fluent Configuration**: Fine-grained control over required fields, length, numeric ranges, file types, and more.
 - **Nested & Array Validation**: Validate nested objects and arrays of objects using registered rules.
@@ -308,7 +308,7 @@ The library is organized into several core components:
 | ObjectArrayValidator     | Validates an array of objects, each using registered rules for its class.                     | `min()`, `max()`, `required()`, `optional()`                                                  |
 
 ### ValidatorBase
-Abstract base for all validators. Implements generic validation (nullability, length, HTML exclusion, allowed/disallowed values, and cross-field constraints) and requires child classes to implement `validate($fieldValue)` for specific logic.
+Abstract base for all validators. Implements the shared validation pipeline (requiredness, normalization, length, HTML exclusion, allowed/disallowed values, and cross-field constraints) and requires child classes to implement protected `validateValue($fieldValue)` for type-specific logic.
 
 Generic constraints include `in()`, `notIn()`, `sameAs()`, `differentFrom()`, `requiredIf()`, `requiredUnless()`, `prohibitedIf()`, and `prohibitedUnless()`. Cross-field constraints are evaluated when validating a registered object:
 ```php
@@ -485,7 +485,7 @@ $rules = [
 This is the rule definition stage; actual validation still happens when you call `ValidationHandler::validate($user)` or use a validator directly.
 
 ### Rule Facade
-`Rule` is the v3 entry point for standalone validators. `Rule::on()` is its class-scoped counterpart, and `RuleSet` is the registry-definition facade. Validator constructors are protected in v3; `Rule` and `ScopedRule` are the supported construction paths.
+`Rule` is the v3 entry point for standalone validators. `Rule::on()` is its class-scoped rule-definition counterpart, `Rule::for()` binds a rule to an object for direct validation, and `RuleSet` is the registry-definition facade. Validator constructors are protected in v3; `Rule` and `ScopedRule` are the supported construction paths.
 
 ```php
 use Fynix\Rule;
@@ -494,10 +494,10 @@ $bare = Rule::string('firstName');
 $checked = Rule::on(User::class)->string('firstName');
 ```
 
-The bare form derives its label automatically. The scoped form validates the owner class and property using the `nameof()` helper, throwing typed rule-definition exceptions. This is the v3 construction API, replacing direct validator construction and `Rules::for()`.
+The bare form derives its label automatically. The class-scoped form validates the owner class and property using the `nameof()` helper, throwing typed rule-definition exceptions. The object-bound form reads the property from the supplied instance when `validate()` is called. Nested object validators remain handler-only and throw a `LogicException` if used directly through `Rule::for()`.
 
 ### Direct Validation Without a Registry
-When you do not need object-level rule registration, validate each value directly with a validator instance. `ValidationHandler::validate()` is for registered objects and cannot infer rules for an unregistered `User` class. This approach is useful for form fields, ad hoc checks, and isolated DTO members.
+When you do not need object-level rule registration, validate each value directly with a validator instance. `validate()` runs the complete shared pipeline; `validateField()` remains available when you want to make the value explicit or provide an owning object for cross-field rules. `ValidationHandler::validate()` is for registered objects and cannot infer rules for an unregistered `User` class. This approach is useful for form fields, ad hoc checks, and isolated DTO members.
 
 ```php
 use Fynix\Rule;
@@ -521,11 +521,11 @@ $user->password = 'StrongPassword123!';
 
 // Validate all five properties without registering User::class.
 $errors = array_filter([
-    'firstName' => Rule::string('firstName')->length(2, 50)->validateField($user->firstName),
-    'lastName' => Rule::string('lastName')->length(2, 50)->validateField($user->lastName),
-    'email' => Rule::email('email')->validateField($user->email),
-    'age' => Rule::number('age')->min(18)->max(120)->validateField($user->age),
-    'password' => Rule::password('password')->length(8, 128)->validateField($user->password),
+    'firstName' => Rule::string('firstName')->length(2, 50)->validate($user->firstName),
+    'lastName' => Rule::string('lastName')->length(2, 50)->validate($user->lastName),
+    'email' => Rule::email('email')->validate($user->email),
+    'age' => Rule::number('age')->min(18)->max(120)->validate($user->age),
+    'password' => Rule::password('password')->length(8, 128)->validate($user->password),
 ]);
 
 // Single-field validation returning the first error
