@@ -25,3 +25,33 @@ function nameof(object|string $classOrObject, string $propertyName): string
 
     return $propertyName;
 }
+
+/**
+ * Read a declared property regardless of its visibility.
+ *
+ * @internal
+ */
+function propertyValue(object $object, string $propertyName): mixed
+{
+    if (!property_exists($object, $propertyName)) {
+        return null;
+    }
+
+    static $propertyCache = [];
+    $cacheKey = $object::class . '::' . $propertyName;
+
+    if (!isset($propertyCache[$cacheKey])) {
+        $propertyCache[$cacheKey] = new \ReflectionProperty($object, $propertyName);
+    }
+
+    $reflection = $propertyCache[$cacheKey];
+    if ($reflection->isPublic()) {
+        return $object->{$propertyName} ?? null;
+    }
+
+    try {
+        return $propertyCache[$cacheKey]->getValue($object);
+    } catch (\Error) {
+        return null;
+    }
+}

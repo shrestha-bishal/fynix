@@ -48,10 +48,10 @@ $user->email = 'not-an-email';
 $errors = ValidationHandler::validate($user);
 ```
 
-Registered validation reads DTO fields as public properties. Use public readable
-properties for fields referenced by `RuleSet`, `Rule::on()`, or `RuleBuilder`.
-The `nameof()` helper verifies that a property exists, but it does not bypass
-private/protected visibility or call getters.
+Registered validation can read declared DTO properties regardless of visibility.
+Fields referenced by `RuleSet`, `Rule::on()`, or `RuleBuilder` may be public,
+protected, or private. The `nameof()` helper verifies that a property exists;
+getters and magic properties are not invoked automatically.
 
 The default result contains messages keyed by property. When the input is invalid, `$errors` contains entries such as:
 

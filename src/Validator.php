@@ -52,7 +52,7 @@ class Validator
 
       foreach($rules as $key => $rule) 
       {
-        $propertyValue = $data->{$key} ?? null;
+        $propertyValue = propertyValue($data, (string) $key);
         
         if(is_array($rule)) 
         {
@@ -128,7 +128,7 @@ class Validator
         }
 
         $field = $rule->propertyName();
-        $fieldValue = isset($data->{$field}) ? $data->{$field} : null;
+        $fieldValue = propertyValue($data, $field);
         $validations = $rule->validateAll($fieldValue, $data);
 
         if(!empty($validations)) {

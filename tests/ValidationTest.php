@@ -423,6 +423,17 @@ final class ValidationTest extends TestCase
         self::assertSame('First Name is too short. This field must be at least 2 characters.', ValidationHandler::validateAndFlatten($user)['firstName']);
     }
 
+    public function testRegisteredValidationReadsPrivateProperties(): void
+    {
+        ValidationRegistry::register(PrivateUser::class, static fn(RuleSet $rules): array => [
+            $rules->string('name')->min(2),
+        ]);
+
+        $user = new PrivateUser('A');
+
+        self::assertSame('Name is too short. This field must be at least 2 characters.', ValidationHandler::validateAndFlatten($user)['name']);
+    }
+
     public function testCombinatorsShortCircuitAndInvert(): void
     {
         $all = new AllOf([Rule::string('name')->min(3), Rule::string('name')->max(10)]);
@@ -519,6 +530,21 @@ final class User
 {
     public string $firstName = '';
     public string $name = '';
+}
+
+final class PrivateUser
+{
+    private string $name;
+
+    public function __construct(string $name)
+    {
+        $this->name = $name;
+    }
+
+    public function name(): string
+    {
+        return $this->name;
+    }
 }
 
 final class Address

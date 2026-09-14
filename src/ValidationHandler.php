@@ -71,7 +71,7 @@ class ValidationHandler {
         foreach($definitions as $definition) {
             if ($definition instanceof NestedValidator && !$definition->isCollection()) {
                 $property = $definition->propertyName();
-                $nestedInstance = $instance->$property ?? null;
+                $nestedInstance = propertyValue($instance, $property);
 
                 if ($nestedInstance === null) {
                     if ($definition->requiredState())
@@ -87,7 +87,7 @@ class ValidationHandler {
 
             if ($definition instanceof NestedValidator && $definition->isCollection()) {
                 $property = $definition->propertyName();
-                $items = $instance->{$property} ?? null;
+                $items = propertyValue($instance, $property);
 
                 if ($items === null) {
                     if ($definition->requiredState())

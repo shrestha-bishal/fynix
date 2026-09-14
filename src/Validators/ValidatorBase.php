@@ -220,7 +220,7 @@ abstract class ValidatorBase implements Validatable
                 throw new \LogicException('Nested validators must run through ValidationHandler::validate().');
             }
 
-            $fieldValue = $this->boundObject->{$this->propertyName} ?? null;
+            $fieldValue = \Fynix\propertyValue($this->boundObject, $this->propertyName);
             $data = $this->boundObject;
         }
 
@@ -333,9 +333,13 @@ abstract class ValidatorBase implements Validatable
             return $this->isRequired;
         }
 
-        $matches = $this->requiredIfCondition !== null
-            ? ($this->requiredIfCondition)($data)
-            : (($data->{$this->requiredIfField} ?? null) === $this->requiredIfValue);
+        if ($this->requiredIfCondition !== null) {
+            $matches = ($this->requiredIfCondition)($data);
+        } elseif ($this->requiredIfField !== null) {
+            $matches = \Fynix\propertyValue($data, $this->requiredIfField) === $this->requiredIfValue;
+        } else {
+            $matches = false;
+        }
 
         return $this->requiredIfMatches ? $matches : !$matches;
     }
@@ -346,9 +350,13 @@ abstract class ValidatorBase implements Validatable
             return null;
         }
 
-        $matches = $this->prohibitedIfCondition !== null
-            ? ($this->prohibitedIfCondition)($data)
-            : (($data->{$this->prohibitedIfField} ?? null) === $this->prohibitedIfValue);
+        if ($this->prohibitedIfCondition !== null) {
+            $matches = ($this->prohibitedIfCondition)($data);
+        } elseif ($this->prohibitedIfField !== null) {
+            $matches = \Fynix\propertyValue($data, $this->prohibitedIfField) === $this->prohibitedIfValue;
+        } else {
+            $matches = false;
+        }
         $isProhibited = $this->prohibitedIfMatches ? $matches : !$matches;
 
         if ($isProhibited && $fieldValue !== null && $fieldValue !== '') {
@@ -368,7 +376,7 @@ abstract class ValidatorBase implements Validatable
         if ($this->sameAsField !== null || $this->sameAsCondition !== null) {
             $expectedValue = $this->sameAsCondition !== null
                 ? ($this->sameAsCondition)($data)
-                : ($data->{$this->sameAsField} ?? null);
+                : (\Fynix\propertyValue($data, $this->sameAsField));
 
             if ($fieldValue !== $expectedValue) {
                 $comparison = $this->sameAsField ?? 'the related value';
@@ -379,7 +387,7 @@ abstract class ValidatorBase implements Validatable
         if ($this->differentFromField !== null || $this->differentFromCondition !== null) {
             $expectedValue = $this->differentFromCondition !== null
                 ? ($this->differentFromCondition)($data)
-                : ($data->{$this->differentFromField} ?? null);
+                : (\Fynix\propertyValue($data, $this->differentFromField));
 
             if ($fieldValue === $expectedValue) {
                 $comparison = $this->differentFromField ?? 'the related value';

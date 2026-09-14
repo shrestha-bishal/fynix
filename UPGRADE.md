@@ -59,8 +59,8 @@ legacy fluent registrations working and supports v3 features such as `when()`.
 
 ## DTO property visibility
 
-Registered validation currently reads fields directly from the validated object.
-Properties referenced by rules must therefore be public and readable:
+Registered validation reads declared fields from the validated object, including
+private and protected properties:
 
 ```php
 final class Order
@@ -70,6 +70,6 @@ final class Order
 }
 ```
 
-`nameof()` checks that a property exists, but it does not bypass private or
-protected visibility and does not call getters. Private state requires a public
-property or a future accessor-based validation adapter.
+`nameof()` checks that a property exists, and the validator reads declared
+properties through reflection. Getters and magic properties are not invoked
+automatically; use a declared property when defining a rule.
