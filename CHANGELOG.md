@@ -4,6 +4,14 @@ All notable changes to this project are documented in this file.
 
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [3.1.0] - 2026-09-14
+
+### Added
+
+- Conditional rules now accept either a field/value pair or a closure predicate.
+- Added `when()` to conditionally enable any validator using the owning object.
+- Added closure support to `sameAs()`, `differentFrom()`, `requiredIf()`, `requiredUnless()`, `prohibitedIf()`, and `prohibitedUnless()`.
+
 ## [3.0.0] - 2026-09-11
 
 ### Added

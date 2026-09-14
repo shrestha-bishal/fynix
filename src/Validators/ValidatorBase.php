@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 namespace Fynix\Validators;
 
+use Closure;
 use Fynix\ValidationError;
 use Fynix\Contracts\Validatable;
 
@@ -19,17 +20,27 @@ abstract class ValidatorBase implements Validatable
     /** @var list<mixed>|null */
     protected ?array $disallowedValues = null;
     protected ?string $sameAsField = null;
+    /** @var Closure(object): mixed|null */
+    protected ?Closure $sameAsCondition = null;
     protected ?string $differentFromField = null;
+    /** @var Closure(object): mixed|null */
+    protected ?Closure $differentFromCondition = null;
     protected ?string $requiredIfField = null;
     protected mixed $requiredIfValue = null;
+    /** @var Closure(object): bool|null */
+    protected ?Closure $requiredIfCondition = null;
     protected bool $hasRequiredIf = false;
     protected bool $requiredIfMatches = true;
     protected ?string $prohibitedIfField = null;
     protected mixed $prohibitedIfValue = null;
+    /** @var Closure(object): bool|null */
+    protected ?Closure $prohibitedIfCondition = null;
     protected bool $hasProhibitedIf = false;
     protected bool $prohibitedIfMatches = true;
     protected ?object $boundObject = null;
-        protected bool $supportsBoundValidation = true;
+    protected bool $supportsBoundValidation = true;
+    /** @var Closure(object): bool|null */
+    protected ?Closure $condition = null;
     
     protected function __construct(string $name, string $propertyName)
     {
@@ -116,6 +127,16 @@ abstract class ValidatorBase implements Validatable
         return $this->genericValidation(false);
     }
 
+    /**
+     * Validate this rule only when the owning object satisfies the condition.
+     *
+     * @param Closure(object): bool $condition
+     */
+    public function when(Closure $condition): static
+    {
+        return $this->with('condition', $condition);
+    }
+
     /** @param list<mixed> $values */
     public function in(array $values): static
     {
@@ -128,47 +149,55 @@ abstract class ValidatorBase implements Validatable
         return $this->with('disallowedValues', $values);
     }
 
-    public function sameAs(string $field): static
+    public function sameAs(string|Closure $fieldOrCondition): static
     {
-        return $this->with('sameAsField', $field);
+        $clone = $this->with('sameAsField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
+
+        return $clone->with('sameAsCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
     }
 
-    public function differentFrom(string $field): static
+    public function differentFrom(string|Closure $fieldOrCondition): static
     {
-        return $this->with('differentFromField', $field);
+        $clone = $this->with('differentFromField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
+
+        return $clone->with('differentFromCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
     }
 
-    public function requiredIf(string $field, mixed $value): static
+    public function requiredIf(string|Closure $fieldOrCondition, mixed $value = null): static
     {
-        $clone = $this->with('requiredIfField', $field);
+        $clone = $this->with('requiredIfField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
         $clone = $clone->with('requiredIfValue', $value);
+        $clone = $clone->with('requiredIfCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
         $clone = $clone->with('requiredIfMatches', true);
 
         return $clone->with('hasRequiredIf', true);
     }
 
-    public function requiredUnless(string $field, mixed $value): static
+    public function requiredUnless(string|Closure $fieldOrCondition, mixed $value = null): static
     {
-        $clone = $this->with('requiredIfField', $field);
+        $clone = $this->with('requiredIfField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
         $clone = $clone->with('requiredIfValue', $value);
+        $clone = $clone->with('requiredIfCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
         $clone = $clone->with('requiredIfMatches', false);
 
         return $clone->with('hasRequiredIf', true);
     }
 
-    public function prohibitedIf(string $field, mixed $value): static
+    public function prohibitedIf(string|Closure $fieldOrCondition, mixed $value = null): static
     {
-        $clone = $this->with('prohibitedIfField', $field);
+        $clone = $this->with('prohibitedIfField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
         $clone = $clone->with('prohibitedIfValue', $value);
+        $clone = $clone->with('prohibitedIfCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
         $clone = $clone->with('prohibitedIfMatches', true);
 
         return $clone->with('hasProhibitedIf', true);
     }
 
-    public function prohibitedUnless(string $field, mixed $value): static
+    public function prohibitedUnless(string|Closure $fieldOrCondition, mixed $value = null): static
     {
-        $clone = $this->with('prohibitedIfField', $field);
+        $clone = $this->with('prohibitedIfField', is_string($fieldOrCondition) ? $fieldOrCondition : null);
         $clone = $clone->with('prohibitedIfValue', $value);
+        $clone = $clone->with('prohibitedIfCondition', $fieldOrCondition instanceof Closure ? $fieldOrCondition : null);
         $clone = $clone->with('prohibitedIfMatches', false);
 
         return $clone->with('hasProhibitedIf', true);
@@ -193,6 +222,10 @@ abstract class ValidatorBase implements Validatable
 
             $fieldValue = $this->boundObject->{$this->propertyName} ?? null;
             $data = $this->boundObject;
+        }
+
+        if ($this->condition !== null && ($data === null || !($this->condition)($data))) {
+            return [];
         }
 
         /** @var list<ValidationError> $errors */
@@ -300,7 +333,9 @@ abstract class ValidatorBase implements Validatable
             return $this->isRequired;
         }
 
-        $matches = (($data->{$this->requiredIfField} ?? null) === $this->requiredIfValue);
+        $matches = $this->requiredIfCondition !== null
+            ? ($this->requiredIfCondition)($data)
+            : (($data->{$this->requiredIfField} ?? null) === $this->requiredIfValue);
 
         return $this->requiredIfMatches ? $matches : !$matches;
     }
@@ -311,7 +346,9 @@ abstract class ValidatorBase implements Validatable
             return null;
         }
 
-        $matches = (($data->{$this->prohibitedIfField} ?? null) === $this->prohibitedIfValue);
+        $matches = $this->prohibitedIfCondition !== null
+            ? ($this->prohibitedIfCondition)($data)
+            : (($data->{$this->prohibitedIfField} ?? null) === $this->prohibitedIfValue);
         $isProhibited = $this->prohibitedIfMatches ? $matches : !$matches;
 
         if ($isProhibited && $fieldValue !== null && $fieldValue !== '') {
@@ -328,12 +365,26 @@ abstract class ValidatorBase implements Validatable
             return [];
         }
 
-        if ($this->sameAsField !== null && $fieldValue !== ($data->{$this->sameAsField} ?? null)) {
-            return [new ValidationError($this, "$this->name must match {$this->sameAsField}.", 'same_as')];
+        if ($this->sameAsField !== null || $this->sameAsCondition !== null) {
+            $expectedValue = $this->sameAsCondition !== null
+                ? ($this->sameAsCondition)($data)
+                : ($data->{$this->sameAsField} ?? null);
+
+            if ($fieldValue !== $expectedValue) {
+                $comparison = $this->sameAsField ?? 'the related value';
+                return [new ValidationError($this, "$this->name must match $comparison.", 'same_as')];
+            }
         }
 
-        if ($this->differentFromField !== null && $fieldValue === ($data->{$this->differentFromField} ?? null)) {
-            return [new ValidationError($this, "$this->name must differ from {$this->differentFromField}.", 'different_from')];
+        if ($this->differentFromField !== null || $this->differentFromCondition !== null) {
+            $expectedValue = $this->differentFromCondition !== null
+                ? ($this->differentFromCondition)($data)
+                : ($data->{$this->differentFromField} ?? null);
+
+            if ($fieldValue === $expectedValue) {
+                $comparison = $this->differentFromField ?? 'the related value';
+                return [new ValidationError($this, "$this->name must differ from $comparison.", 'different_from')];
+            }
         }
 
         return [];

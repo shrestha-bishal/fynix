@@ -333,6 +333,79 @@ final class ValidationTest extends TestCase
         self::assertArrayHasKey('businessName', $errors);
     }
 
+    public function testConditionalRulesAcceptClosurePredicates(): void
+    {
+        ValidationRegistry::register(Registration::class, static fn(RuleSet $rules): array => [
+            $rules->string('companyName')->optional()->requiredIf(
+                static fn(Registration $registration): bool => $registration->accountType === 'business'
+            ),
+            $rules->string('individualId')->optional()->requiredUnless(
+                static fn(Registration $registration): bool => $registration->accountType === 'individual'
+            ),
+            $rules->string('nickname')->optional()->prohibitedIf(
+                static fn(Registration $registration): bool => $registration->accountType === 'business'
+            ),
+            $rules->string('businessName')->optional()->prohibitedUnless(
+                static fn(Registration $registration): bool => $registration->accountType === 'individual'
+            ),
+        ]);
+
+        $registration = new Registration();
+        $registration->accountType = 'business';
+        $registration->nickname = 'not allowed';
+        $registration->businessName = 'Acme';
+
+        $errors = ValidationHandler::validateAndFlatten($registration);
+
+        self::assertArrayHasKey('companyName', $errors);
+        self::assertArrayHasKey('individualId', $errors);
+        self::assertArrayHasKey('nickname', $errors);
+        self::assertArrayHasKey('businessName', $errors);
+    }
+
+    public function testRelatedRulesAcceptClosureValueResolvers(): void
+    {
+        ValidationRegistry::register(Registration::class, static fn(RuleSet $rules): array => [
+            $rules->string('passwordConfirmation')->sameAs(
+                static fn(Registration $registration): string => $registration->password
+            ),
+            $rules->string('username')->differentFrom(
+                static fn(Registration $registration): string => $registration->password
+            ),
+        ]);
+
+        $registration = new Registration();
+        $registration->password = 'secret';
+        $registration->passwordConfirmation = 'mismatch';
+        $registration->username = 'secret';
+
+        $errors = ValidationHandler::validateAndFlatten($registration);
+
+        self::assertArrayHasKey('passwordConfirmation', $errors);
+        self::assertArrayHasKey('username', $errors);
+    }
+
+    public function testWhenConditionGatesAnyValidator(): void
+    {
+        ValidationRegistry::register(Registration::class, static fn(RuleSet $rules): array => [
+            $rules->string('companyName')
+                ->min(10)
+                ->when(static fn(object $registration): bool =>
+                    $registration instanceof Registration && $registration->accountType === 'business'
+                ),
+        ]);
+
+        $registration = new Registration();
+        $registration->accountType = 'individual';
+
+        self::assertSame([], ValidationHandler::validate($registration));
+
+        $registration->accountType = 'business';
+        $registration->companyName = 'Acme';
+
+        self::assertSame('Company Name is too short. This field must be at least 10 characters.', ValidationHandler::validateAndFlatten($registration)['companyName']);
+    }
+
     public function testCombinatorsShortCircuitAndInvert(): void
     {
         $all = new AllOf([Rule::string('name')->min(3), Rule::string('name')->max(10)]);
