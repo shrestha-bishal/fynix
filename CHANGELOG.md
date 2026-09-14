@@ -10,6 +10,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - Conditional rules now accept either a field/value pair or a closure predicate.
 - Added `when()` to conditionally enable any validator using the owning object.
+- Restored `Rules::for()` and `RuleBuilder` as a v3 compatibility layer.
 - Added closure support to `sameAs()`, `differentFrom()`, `requiredIf()`, `requiredUnless()`, `prohibitedIf()`, and `prohibitedUnless()`.
 
 ## [3.0.0] - 2026-09-11

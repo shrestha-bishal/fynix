@@ -39,7 +39,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "3.0-dev"
+            "dev-main": "3.1-dev"
         },
         "readme": "README.md",
         "funding": [
@@ -111,6 +111,26 @@
         "reusable validation",
         "custom validators",
         "validation rules",
+        "conditional validation",
+        "cross field validation",
+        "closure validation",
+        "fluent validation",
+        "rule builder",
+        "rule set",
+        "ruleset validation",
+        "immutable validators",
+        "required if validation",
+        "prohibited if validation",
+        "enum validation",
+        "url validation",
+        "uuid validation",
+        "integer validation",
+        "decimal validation",
+        "boolean validation",
+        "regex validation",
+        "date validation",
+        "object graph validation",
+        "validation errors",
         "batch validation",
         "associative validation",
         "error normalization",

@@ -8,6 +8,7 @@ use Fynix\Exceptions\UndeclaredPropertyException;
 use Fynix\Exceptions\UnknownClassException;
 use Fynix\Rule;
 use Fynix\RuleSet;
+use Fynix\Rules;
 use Fynix\Rules\AllOf;
 use Fynix\Rules\AnyOf;
 use Fynix\Rules\Not;
@@ -404,6 +405,22 @@ final class ValidationTest extends TestCase
         $registration->companyName = 'Acme';
 
         self::assertSame('Company Name is too short. This field must be at least 10 characters.', ValidationHandler::validateAndFlatten($registration)['companyName']);
+    }
+
+    public function testLegacyRuleBuilderUsesV3Validators(): void
+    {
+        $resolver = Rules::for(User::class)
+            ->string('firstName')
+            ->min(2)
+            ->when(static fn(object $user): bool => $user instanceof User)
+            ->rules();
+
+        ValidationRegistry::register(User::class, static fn(RuleSet $rules): array => $resolver);
+
+        $user = new User();
+        $user->firstName = 'A';
+
+        self::assertSame('First Name is too short. This field must be at least 2 characters.', ValidationHandler::validateAndFlatten($user)['firstName']);
     }
 
     public function testCombinatorsShortCircuitAndInvert(): void

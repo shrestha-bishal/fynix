@@ -40,3 +40,36 @@ The closure form is also available on `requiredUnless()`, `prohibitedIf()`,
 `differentFrom()`, the closure returns the value to compare against. Predicates
 run during validation and receive the actual object, not the `RuleSet` used to
 define the rules.
+
+## v3.1 RuleBuilder compatibility
+
+The v2 builder is available as a compatibility layer on top of v3:
+
+```php
+use Fynix\Rules;
+
+$rules = Rules::for(Order::class)
+	->string('shippingMethod')
+	->required()
+	->rules();
+```
+
+New code should prefer `RuleSet` in registry definitions. `RuleBuilder` keeps
+legacy fluent registrations working and supports v3 features such as `when()`.
+
+## DTO property visibility
+
+Registered validation currently reads fields directly from the validated object.
+Properties referenced by rules must therefore be public and readable:
+
+```php
+final class Order
+{
+	public string $shippingMethod = '';
+	public ?string $shippingBusinessName = null;
+}
+```
+
+`nameof()` checks that a property exists, but it does not bypass private or
+protected visibility and does not call getters. Private state requires a public
+property or a future accessor-based validation adapter.
